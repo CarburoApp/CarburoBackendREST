@@ -1,4 +1,4 @@
-package app.carburo.api.backend.controllers.v1.publicc;
+package app.carburo.api.backend.controllers.v1.publico;
 
 import app.carburo.api.backend.controllers.utilities.ApiResponse;
 import app.carburo.api.backend.dto.ProvinciaDto;

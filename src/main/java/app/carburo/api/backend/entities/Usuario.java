@@ -26,19 +26,6 @@ public class Usuario {
     @Column(nullable = false, updatable = false)
     private UUID uuid;
 
-    @Column(nullable = false, length = 50)
-    private String nombre;
-
-    @Column(nullable = false, length = 150, unique = true)
-    private String email;
-
-    // Contraseñas temporales, no se guardan en BD
-    @Transient
-    private String contrasena;
-
-    @Transient
-    private String confirmacionContrasena;
-
     @Column(name = "fecha_registro", nullable = false)
     private OffsetDateTime fechaRegistro;
 
@@ -70,23 +57,19 @@ public class Usuario {
     private Set<EstacionDeServicio> eessFavoritas = new HashSet<>();
 
 
-    public Usuario(UUID uuid, String nombre, String email,
+    public Usuario(UUID uuid,
                    OffsetDateTime fechaRegistro,
                    OffsetDateTime fechaActualizacion,
                    Provincia provinciaFavorita) {
         setUuid(uuid);
-        setNombre(nombre);
-        setEmail(email);
         setFechaRegistro(fechaRegistro);
         setFechaActualizacion(fechaActualizacion);
         setProvinciaFavorita(provinciaFavorita);
     }
 
-    public Usuario(UUID uuid, String nombre, String email,
+    public Usuario(UUID uuid,
                    Provincia provinciaFavorita) {
         setUuid(uuid);
-        setNombre(nombre);
-        setEmail(email);
         setFechaRegistro(OffsetDateTime.now());
         setFechaActualizacion(OffsetDateTime.now());
         setProvinciaFavorita(provinciaFavorita);

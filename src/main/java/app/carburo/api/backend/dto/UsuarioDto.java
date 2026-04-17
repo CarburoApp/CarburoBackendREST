@@ -1,41 +1,27 @@
 package app.carburo.api.backend.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import app.carburo.api.backend.entities.EstacionDeServicio;
+import app.carburo.api.backend.entities.Usuario;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Getter
-@Setter
-@ToString
-public class UsuarioDto {
+/**
+ * DTO de {@link Usuario}. Diseñado para su uso en peticiones REST.
+ */
+public record UsuarioDto(
+		UUID uuid,
+		short id_provincia_favorita,
+		List<Short> ids_combustibles_favoritos,
+		List<Integer> ids_estaciones_de_servicio_favoritas
+) {
 
-    private UUID uuid;
-    private String contrasena;
-    private String confirmacionContrasena;
-    private OffsetDateTime fechaRegistro;
-    private OffsetDateTime fechaActualizacion;
-    private short provinciaFavorita = 0;
-
-    private String token;
-
-    private List<Integer> eessFavoritas;
-
-    public UsuarioDto(UUID uuid,
-                      OffsetDateTime fechaRegistro,
-                      OffsetDateTime fechaActualizacion,
-                      short provinciaFavorita,
-                      String accesoToken) {
-        setUuid(uuid);
-        setFechaRegistro(fechaRegistro);
-        setFechaActualizacion(fechaActualizacion);
-        setProvinciaFavorita(provinciaFavorita);
-        setToken(accesoToken);
-    }
-
-    public UsuarioDto() {
-    }
+	public static UsuarioDto from(Usuario usuario) {
+		return new UsuarioDto(
+				usuario.getUuid(),
+				usuario.getProvinciaFavorita().getId(),
+				List.of(),
+				usuario.getEessFavoritas().stream().map(EstacionDeServicio::getId).toList()
+		);
+	}
 }

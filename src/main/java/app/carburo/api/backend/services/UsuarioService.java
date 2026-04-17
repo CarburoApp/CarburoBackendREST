@@ -40,19 +40,6 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    /**
-     * Comprueba si un correo electrónico ya está registrado en el sistema.
-     *
-     * @param correo correo electrónico a comprobar
-     * @return {@code true} si el correo ya existe, {@code false} en caso contrario
-     * @throws IllegalArgumentException si el correo es {@code null} o está vacío
-     */
-    public boolean containsCorreo(String correo) {
-        if (correo == null || correo.isBlank()) {
-            throw new IllegalArgumentException("El correo no puede ser nulo ni vacío.");
-        }
-        return usuarioRepository.existsUsuarioByEmail(correo);
-    }
 
     /**
      * Guarda un usuario en el sistema.
@@ -67,25 +54,6 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
-    /**
-     * Actualiza el denominacion de un usuario existente.
-     *
-     * @param id                   identificador UUID del usuario
-     * @param nuevoNombreDeUsuario nuevo denominacion a asignar
-     * @throws IllegalArgumentException si alguno de los parámetros es inválido
-     */
-    public void updateNombreDeUsuario(UUID id, String nuevoNombreDeUsuario) {
-        if (id == null || nuevoNombreDeUsuario == null || nuevoNombreDeUsuario.isBlank()) {
-            throw new IllegalArgumentException("Parámetros inválidos para la actualización del denominacion.");
-        }
-
-        Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
-        if (usuarioOpt.isPresent()) {
-            Usuario usuario = usuarioOpt.get();
-            usuario.setNombre(nuevoNombreDeUsuario);
-            usuarioRepository.save(usuario);
-        }
-    }
 
     /**
      * Actualiza la provincia favorita de un usuario.
@@ -138,24 +106,6 @@ public class UsuarioService {
     }
 
     /**
-     * Elimina una estación de servicio de la lista de favoritas del usuario.
-     *
-     * @param usuario            Usuario propietario de las favoritas
-     * @param estacionDeServicio Estación a eliminar
-     * @throws IllegalArgumentException si alguno de los parámetros es null
-     */
-    @Transactional
-    public void removeEstacionDeServicioFavorita(Usuario usuario,
-                                                 EstacionDeServicio estacionDeServicio) {
-        if (!isEstacionDeServicioFavorita(usuario, estacionDeServicio)) return;
-        if (usuario == null || estacionDeServicio == null)
-            throw new IllegalArgumentException(
-                    "Parámetros inválidos para la comprobación de estación de servicio favorita para el usuario.");
-        usuario.getEessFavoritas().remove(estacionDeServicio);
-        usuarioRepository.save(usuario);
-    }
-
-    /**
      * Añade una estación de servicio a la lista de favoritas del usuario.
      *
      * @param usuario            Usuario propietario de las favoritas
@@ -170,6 +120,24 @@ public class UsuarioService {
             throw new IllegalArgumentException(
                     "Parámetros inválidos para la comprobación de estación de servicio favorita para el usuario.");
         usuario.getEessFavoritas().add(estacionDeServicio);
+        usuarioRepository.save(usuario);
+    }
+
+    /**
+     * Elimina una estación de servicio de la lista de favoritas del usuario.
+     *
+     * @param usuario            Usuario propietario de las favoritas
+     * @param estacionDeServicio Estación a eliminar
+     * @throws IllegalArgumentException si alguno de los parámetros es null
+     */
+    @Transactional
+    public void removeEstacionDeServicioFavorita(Usuario usuario,
+                                                 EstacionDeServicio estacionDeServicio) {
+        if (!isEstacionDeServicioFavorita(usuario, estacionDeServicio)) return;
+        if (usuario == null || estacionDeServicio == null)
+            throw new IllegalArgumentException(
+                    "Parámetros inválidos para la comprobación de estación de servicio favorita para el usuario.");
+        usuario.getEessFavoritas().remove(estacionDeServicio);
         usuarioRepository.save(usuario);
     }
 }
