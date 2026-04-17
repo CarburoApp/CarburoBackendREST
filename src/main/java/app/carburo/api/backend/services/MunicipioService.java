@@ -1,8 +1,9 @@
 package app.carburo.api.backend.services;
 
-import app.carburo.api.backend.entities.Municipio;
-import app.carburo.api.backend.entities.Provincia;
+import app.carburo.api.backend.dto.MunicipioDto;
+import app.carburo.api.backend.exceptions.ResourceNotFoundException;
 import app.carburo.api.backend.repositories.MunicipioRepository;
+import app.carburo.api.backend.repositories.ProvinciaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,20 +11,39 @@ import java.util.List;
 
 @Service
 public class MunicipioService {
-	private final MunicipioRepository municipioRepository;
 
-	public MunicipioService(MunicipioRepository municipioRepository) {
+	private final MunicipioRepository municipioRepository;
+	private final ProvinciaRepository provinciaRepository;
+
+	public MunicipioService(MunicipioRepository municipioRepository,
+							ProvinciaRepository provinciaRepository) {
 		this.municipioRepository = municipioRepository;
+		this.provinciaRepository = provinciaRepository;
 	}
 
-	public List<Municipio> getMunicipios() {
-		List<Municipio> municipios = new ArrayList<>();
-		municipioRepository.findAll().forEach(municipios::add);
+	public List<MunicipioDto> getMunicipiosDTO() {
+		List<MunicipioDto> municipios = new ArrayList<>();
+		municipioRepository.findAll()
+				.forEach(municipio -> municipios.add(MunicipioDto.from(municipio)));
 		return municipios;
 	}
 
-	public List<Municipio> getMunicipiosByProvinciaConEESSAsociadas(Provincia provincia) {
-		return new ArrayList<>(
-				municipioRepository.findMunicipioByProvinciaConEESS(provincia));
+	public List<MunicipioDto> getMunicipiosDTOByProvincia(short idProvincia) {
+		if (!provinciaRepository.existsById(idProvincia))
+			throw new ResourceNotFoundException(
+					"Provincia no encontrada con id: " + idProvincia);
+
+		return municipioRepository.findMunicipioByProvincia(idProvincia).stream()
+				.map(MunicipioDto::from).toList();
 	}
+
+	public List<MunicipioDto> getMunicipiosDTOByProvinciaConEESS(short idProvincia) {
+		if (!provinciaRepository.existsById(idProvincia))
+			throw new ResourceNotFoundException(
+					"Provincia no encontrada con id: " + idProvincia);
+
+		return municipioRepository.findMunicipioByProvinciaConEESS(idProvincia).stream()
+				.map(MunicipioDto::from).toList();
+	}
+
 }

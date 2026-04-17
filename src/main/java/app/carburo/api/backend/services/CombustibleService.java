@@ -20,7 +20,7 @@ public class CombustibleService {
 	public List<CombustibleDto> getCombustiblesDto() {
 		List<CombustibleDto> combustibles = new ArrayList<>();
 		combustibleRepository.findAll().forEach(
-				combustible -> combustibles.add(new CombustibleDto(combustible)));
+				combustible -> combustibles.add(CombustibleDto.from(combustible)));
 		return combustibles;
 	}
 

@@ -1,4 +1,4 @@
-package app.carburo.api.backend.config;
+package app.carburo.api.backend.controllers.utilities;
 
 /**
  * DTO estándar de respuesta de error de la API.

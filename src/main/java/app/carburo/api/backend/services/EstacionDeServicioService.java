@@ -1,14 +1,16 @@
 package app.carburo.api.backend.services;
 
-import app.carburo.api.backend.entities.*;
+import app.carburo.api.backend.dto.EstacionDeServicioDto;
+import app.carburo.api.backend.entities.EstacionDeServicio;
+import app.carburo.api.backend.exceptions.ResourceNotFoundException;
+import app.carburo.api.backend.repositories.ComunidadAutonomaRepoository;
 import app.carburo.api.backend.repositories.EstacionDeServicioRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import app.carburo.api.backend.repositories.MunicipioRepository;
+import app.carburo.api.backend.repositories.ProvinciaRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Servicio para gestionar estaciones de servicio.
@@ -18,34 +20,42 @@ import java.util.stream.Collectors;
 public class EstacionDeServicioService {
 
 	private final EstacionDeServicioRepository estacionDeServicioRepository;
-	private final ComunidadAutonomaService comunidadAutonomaService;
 	private final CombustibleService combustibleService;
+	private final ComunidadAutonomaRepoository comunidadAutonomaRepository;
+	private final ProvinciaRepository provinciaRepository;
+	private final MunicipioRepository municipioRepository;
+
+	/**
+	 * Inyección de dependencias de los servicios.
+	 */
 
 	public EstacionDeServicioService(
 			EstacionDeServicioRepository estacionDeServicioRepository,
-			ComunidadAutonomaService comunidadAutonomaService,
+			ComunidadAutonomaRepoository comunidadAutonomaRepository,
+			ProvinciaRepository provinciaRepository,
+			MunicipioRepository municipioRepository,
 			CombustibleService combustibleService) {
 		this.estacionDeServicioRepository = estacionDeServicioRepository;
-		this.comunidadAutonomaService     = comunidadAutonomaService;
+		this.comunidadAutonomaRepository  = comunidadAutonomaRepository;
+		this.provinciaRepository          = provinciaRepository;
+		this.municipioRepository          = municipioRepository;
 		this.combustibleService           = combustibleService;
 	}
 
-	/**
-	 * Devuelve todas las estaciones de servicio sin paginación
-	 */
-	public List<EstacionDeServicio> getEstacionesDeServicio() {
-		List<EstacionDeServicio> estaciones = new ArrayList<>();
-		estacionDeServicioRepository.findAll().forEach(estaciones::add);
+	public List<EstacionDeServicioDto> getEstacionesDeServicioDto() {
+		List<EstacionDeServicioDto> estaciones = new ArrayList<>();
+		estacionDeServicioRepository.findAll()
+				.forEach(eess -> estaciones.add(EstacionDeServicioDto.from(eess)));
 		return estaciones;
 	}
 
 	/**
-	 * Devuelve todas las estaciones de servicio paginadas
+	 * Devuelve una estación de servicio según su ID
 	 */
-	public Page<EstacionDeServicio> getEstacionesDeServicio(Pageable pageable) {
-		return estacionDeServicioRepository.findAll(pageable);
+	public EstacionDeServicioDto getEstacionDeServicioDtoById(int id) {
+		return EstacionDeServicioDto.from(
+				estacionDeServicioRepository.findEstacionDeServicioById(id));
 	}
-
 
 	/**
 	 * Obtiene la estación de servicio más cercana a una ubicación dada.
@@ -60,245 +70,65 @@ public class EstacionDeServicioService {
 	 * @return la estación de servicio más cercana a las coordenadas indicadas,
 	 *         o {@code null} si no existe ninguna
 	 */
-	public EstacionDeServicio getEstacionDeServicioMasProxima(double latitud, double longitud) {
-		return estacionDeServicioRepository.findEstacionDeServicioMasCercana(latitud, longitud);
-	}
-
-
-
-	/**
-	 * Devuelve las estaciones de servicio de una Comunidad Autónoma específica
-	 */
-	public List<EstacionDeServicio> getEstacionesDeServicioByComunidadAutonoma(Short id) {
-		return new ArrayList<>(
-				estacionDeServicioRepository.findEstacionDeServicioByComunidadAutonoma(
-						id));
+	public EstacionDeServicioDto getEstacionDeServicioMasProxima(double latitud,
+																 double longitud) {
+		return EstacionDeServicioDto.from(
+				estacionDeServicioRepository.findEstacionDeServicioMasCercana(latitud,
+																			  longitud));
 	}
 
 	/**
-	 * Devuelve las estaciones de servicio de una Provincia específica
+	 * Devuelve estaciones por comunidad autónoma (DTO)
 	 */
-	public List<EstacionDeServicio> getEstacionesDeServicioByProvincia(Short id) {
-		return new ArrayList<>(
-				estacionDeServicioRepository.findEstacionDeServicioByProvincia(id));
-	}
+	public List<EstacionDeServicioDto> getEstacionesDeServicioDtoByComunidadAutonoma(
+			short id) {
+		if (!comunidadAutonomaRepository.existsById(id))
+			throw new ResourceNotFoundException(
+					"Comunidad autónoma no encontrada con id: " + id);
 
-	/**
-	 * Devuelve las estaciones de servicio de un Municipio específico
-	 */
-	public List<EstacionDeServicio> getEstacionesDeServicioByMunicipio(Short id) {
-		return new ArrayList<>(
-				estacionDeServicioRepository.findEstacionDeServicioByMunicipio(id));
-	}
 
-	/**
-	 * Extrae todas las marcas únicas de una lista de estaciones
-	 */
-	public List<String> getMarcasFromEESS(List<EstacionDeServicio> estaciones) {
-		return estaciones.stream().map(EstacionDeServicio::getRotulo).collect(
-						Collectors.toCollection(
-								() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER))).stream()
-				.toList();
-	}
-
-	/**
-	 * Devuelve una estación de servicio según su ID
-	 */
-	public EstacionDeServicio getEstacionDeServicioById(int id) {
-		return estacionDeServicioRepository.findEstacionDeServicioById(id);
-	}
-
-	/**
-	 * Filtra estaciones según ubicación, búsqueda, combustible, estado, marca y ordenamiento.
-	 * Devuelve un Page<EstacionDeServicio> paginable.
-	 */
-	public List<EstacionDeServicio> filtrarEstaciones(String comunidadId,
-													  String provinciaId,
-													  String municipioId, String busqueda,
-													  String[] combustibles,
-													  String estado, String marca,
-													  String ordenarPor) {
-
-		// Filtrado por ubicación geográfica
-		List<EstacionDeServicio> estaciones = filtrarPorUbicacion(comunidadId,
-																  provinciaId,
-																  municipioId);
-
-		// Aplicar filtros adicionales
-		estaciones = filtrarPorBusqueda(estaciones, busqueda);
-		estaciones = filtrarPorCombustibles(estaciones, combustibles);
-		estaciones = filtrarPorEstado(estaciones, estado);
-		estaciones = filtrarPorMarca(estaciones, marca);
-
-		// Ordenamiento
-		//estaciones = ordenarEstaciones(estaciones, ordenarPor);
-
-		// Convertir a Page para paginación
-		return estaciones;
-	}
-
-    /* ==========================
-       Métodos privados modulares
-       ========================== */
-
-	/**
-	 * Filtra estaciones según jerarquía geográfica: CCAA > Provincia > Municipio
-	 */
-	private List<EstacionDeServicio> filtrarPorUbicacion(String comunidadId,
-														 String provinciaId,
-														 String municipioId) {
-		if (comunidadId != null && !comunidadId.equals("0")) {
-			short idCCAA = Short.parseShort(comunidadId);
-			Optional<ComunidadAutonoma> ccaa = comunidadAutonomaService.getComunidadAutonomaById(
-					idCCAA);
-			if (ccaa.isPresent()) {
-				if (provinciaId != null && !provinciaId.equals("0")) {
-					short idProvincia = Short.parseShort(provinciaId);
-					Optional<Provincia> provincia = ccaa.get().getProvincias().stream()
-							.filter(p -> p.getId() == idProvincia).findFirst();
-					if (provincia.isPresent()) {
-						if (municipioId != null && !municipioId.equals("0")) {
-							short idMunicipio = Short.parseShort(municipioId);
-							Optional<Municipio> municipio = provincia.get()
-									.getMunicipios().stream()
-									.filter(m -> m.getId() == idMunicipio).findFirst();
-							return municipio.isPresent() ? getEstacionesDeServicioByMunicipio(
-									idMunicipio) : getEstacionesDeServicioByProvincia(
-									idProvincia);
-						}
-						return getEstacionesDeServicioByProvincia(idProvincia);
-					}
-				}
-				return getEstacionesDeServicioByComunidadAutonoma(idCCAA);
-			}
-		}
-		return getEstacionesDeServicio(); // Si no hay filtro, devuelve todas
-	}
-
-	/**
-	 * Filtra estaciones según búsqueda por rótulo, ID, localidad o municipio
-	 */
-	private List<EstacionDeServicio> filtrarPorBusqueda(
-			List<EstacionDeServicio> estaciones, String busqueda) {
-		if (busqueda == null || busqueda.isBlank()) return estaciones;
-
-		String busq = busqueda.toLowerCase();
-
-		return estaciones.stream().filter(e -> {
-			String rotulo = e.getRotulo().toLowerCase();
-			String direccion = e.getDireccion().toLowerCase();
-			String localidad = e.getLocalidad().toLowerCase();
-			String municipio = e.getMunicipio().getDenominacion().toLowerCase();
-			String cp = String.valueOf(e.getCodigoPostal());
-			String id = String.valueOf(e.getId());
-
-			return rotulo.contains(busq) || direccion.contains(busq) ||
-					localidad.contains(busq) || municipio.contains(busq) ||
-					cp.contains(busq) || id.equals(busq);
-		}).collect(Collectors.toList());
+		return estacionDeServicioRepository.findEstacionDeServicioByComunidadAutonoma(id)
+				.stream().map(EstacionDeServicioDto::from).toList();
 	}
 
 
 	/**
-	 * Filtra estaciones que tengan al menos uno de los combustibles seleccionados
+	 * Devuelve estaciones por provincia (DTO)
 	 */
-	private List<EstacionDeServicio> filtrarPorCombustibles(
-			List<EstacionDeServicio> estaciones, String[] combustibles) {
+	public List<EstacionDeServicioDto> getEstacionesDeServicioDtoByProvincia(short id) {
+		if (!provinciaRepository.existsById(id))
+			throw new ResourceNotFoundException("Provincia no encontrada con id: " + id);
 
-		if (combustibles == null || combustibles.length == 0)
-			return estaciones; // nada que filtrar
-
-		// Convertimos el array de IDs seleccionados a Set para búsquedas rápidas
-		Set<String> idsSeleccionados = Set.of(combustibles);
-
-		// Obtenemos los combustibles oficiales que coinciden con la selección
-		List<Combustible> combustiblesSeleccionados = combustibleService.getCombustibles()
-				.stream().filter(c -> idsSeleccionados.contains(c.getCodigo()))
-				.toList(); // si usas Java 8, cambia a .collect(Collectors.toList())
-
-		if (combustiblesSeleccionados.isEmpty())
-			return estaciones; // ningún combustible coincide
-
-		// Creamos un Set con todas las estaciones de los combustibles seleccionados
-		Set<EstacionDeServicio> estacionesFiltradasPorCombustible = combustiblesSeleccionados.stream()
-				.flatMap(c -> c.getEstacionesDeServicio().stream()).collect(
-						Collectors.toSet()); // Set para eliminar duplicados y acceso rápido
-
-		// Solo devolvemos las estaciones que estaban en la lista original
-		return estaciones.stream().filter(estacionesFiltradasPorCombustible::contains)
-				.toList(); // Java 16+, si Java 8: .collect(Collectors.toList())
+		return estacionDeServicioRepository.findEstacionDeServicioByProvincia(id).stream()
+				.map(EstacionDeServicioDto::from).toList();
 	}
 
 
 	/**
-	 * Filtra estaciones según su estado (abierto/cerrado). Si estado es "INDIFERENTE", no filtra
+	 * Devuelve estaciones por municipio (DTO)
 	 */
-	private List<EstacionDeServicio> filtrarPorEstado(List<EstacionDeServicio> estaciones,
-													  String estado) {
-		if (estado == null || estado.equalsIgnoreCase("INDIFERENTE"))
-			return estaciones; // No filtramos nada
+	public List<EstacionDeServicioDto> getEstacionesDeServicioDtoByMunicipio(short id) {
+		if (!municipioRepository.existsById(id))
+			throw new ResourceNotFoundException("Municipio no encontrado con id: " + id);
 
-		return estaciones.stream().filter(e -> switch (estado.toUpperCase()) {
-			case "ABIERTO" -> e.isAbierto();   // Solo abiertos
-			case "CERRADO" -> !e.isAbierto();  // Solo cerrados
-			default -> true;                   // Por seguridad, si es otro valor, no filtra
-		}).collect(Collectors.toList());
+		return estacionDeServicioRepository.findEstacionDeServicioByMunicipio(id).stream()
+				.map(EstacionDeServicioDto::from).toList();
 	}
 
+	public List<EstacionDeServicioDto> getEstacionesDeServicioDtoCercanas(double lat,
+																		  double lon,
+																		  int limit) {
+		if (Double.isNaN(lat) || Double.isNaN(lon))
+			throw new IllegalArgumentException("Latitud y longitud son obligatorias");
+		if (lat < -90 || lat > 90) throw new IllegalArgumentException(
+				"Latitud fuera de rango válido (-90 a 90)");
+		if (lon < -180 || lon > 180) throw new IllegalArgumentException(
+				"Longitud fuera de rango válido (-180 a 180)");
+		if (limit <= 0) limit = 1;
+		if (limit > 10) limit = 10;
 
-	/**
-	 * Filtra estaciones según la marca seleccionada. Si es "0NOTSELECTED", no filtra
-	 */
-	private List<EstacionDeServicio> filtrarPorMarca(List<EstacionDeServicio> estaciones,
-													 String marca) {
-		if (marca != null && !marca.equals("0NOTSELECTED")) {
-			return estaciones.stream().filter(e -> e.getRotulo().equalsIgnoreCase(marca))
-					.collect(Collectors.toList());
-		}
-		return estaciones;
+		List<EstacionDeServicio> estaciones = estacionDeServicioRepository.findEstacionDeServicioMasCercana(
+				lat, lon, limit);
+		return estaciones.stream().map(EstacionDeServicioDto::from).toList();
 	}
-
-	/**
-	 * Ordena estaciones por precio mínimo o nombre según el parámetro "ordenarPor"
-	 */
-	private List<EstacionDeServicio> ordenarEstaciones(
-			List<EstacionDeServicio> estaciones, String ordenarPor) {
-		estaciones.sort((e1, e2) -> {
-			switch (ordenarPor != null ? ordenarPor : "name_asc") {
-				case "price_asc" -> Double.compare(e1.getPreciosCombustibles().stream()
-														   .mapToDouble(
-																   PrecioCombustible::getPrecio)
-														   .min().orElse(0),
-												   e2.getPreciosCombustibles().stream()
-														   .mapToDouble(
-																   PrecioCombustible::getPrecio)
-														   .min().orElse(0));
-				case "price_desc" -> Double.compare(e2.getPreciosCombustibles().stream()
-															.mapToDouble(
-																	PrecioCombustible::getPrecio)
-															.min().orElse(0),
-													e1.getPreciosCombustibles().stream()
-															.mapToDouble(
-																	PrecioCombustible::getPrecio)
-															.min().orElse(0));
-				case "name_desc" -> e2.getRotulo().compareToIgnoreCase(e1.getRotulo());
-				default -> e1.getRotulo().compareToIgnoreCase(e2.getRotulo());
-			}
-			return 0;
-		});
-		return estaciones;
-	}
-
-	/**
-	 * Convierte una lista de estaciones en un {@link Page<EstacionDeServicio>} según el Pageable
-	 */
-	public Page<EstacionDeServicio> toPage(List<EstacionDeServicio> estaciones,
-											Pageable pageable) {
-		int start = (int) pageable.getOffset();
-		int end = Math.min(start + pageable.getPageSize(), estaciones.size());
-		List<EstacionDeServicio> subList = (start <= end) ? estaciones.subList(start,
-																			   end) : Collections.emptyList();
-		return new PageImpl<>(subList, pageable, estaciones.size());
-	}
-
 }

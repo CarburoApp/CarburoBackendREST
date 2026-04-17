@@ -68,15 +68,15 @@ public class UsuarioService {
     }
 
     /**
-     * Actualiza el nombre de un usuario existente.
+     * Actualiza el denominacion de un usuario existente.
      *
      * @param id                   identificador UUID del usuario
-     * @param nuevoNombreDeUsuario nuevo nombre a asignar
+     * @param nuevoNombreDeUsuario nuevo denominacion a asignar
      * @throws IllegalArgumentException si alguno de los parámetros es inválido
      */
     public void updateNombreDeUsuario(UUID id, String nuevoNombreDeUsuario) {
         if (id == null || nuevoNombreDeUsuario == null || nuevoNombreDeUsuario.isBlank()) {
-            throw new IllegalArgumentException("Parámetros inválidos para la actualización del nombre.");
+            throw new IllegalArgumentException("Parámetros inválidos para la actualización del denominacion.");
         }
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);

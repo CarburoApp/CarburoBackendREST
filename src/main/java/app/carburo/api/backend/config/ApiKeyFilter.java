@@ -1,5 +1,6 @@
 package app.carburo.api.backend.config;
 
+import app.carburo.api.backend.controllers.utilities.ApiResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,8 +60,8 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 				response.setContentType(CONTENT_TYPE_JSON);
 				response.setCharacterEncoding(CONTENT_CHARACTER_ENCODING);
-				ApiErrorResponse error = new ApiErrorResponse("UNAUTHORIZED",
-															  "Invalid API Key");
+				ApiResponse<?> error = ApiResponse.error(ERR_UNAUTHORIZED,
+														 ERR_INVALID_API_KEY);
 				objectMapper.writeValue(response.getOutputStream(), error);
 				return;
 			}

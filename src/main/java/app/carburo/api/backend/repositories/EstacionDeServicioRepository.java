@@ -63,4 +63,15 @@ public interface EstacionDeServicioRepository extends CrudRepository<EstacionDeS
 	EstacionDeServicio findEstacionDeServicioMasCercana(@Param("lat") double lat,
 														@Param("lon") double lon);
 
+	@Query(
+			value = """
+					    SELECT *
+					    FROM eess
+					    ORDER BY coordenadas <-> ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography
+					    LIMIT :limit
+					""", nativeQuery = true
+	)
+	List<EstacionDeServicio> findEstacionDeServicioMasCercana(@Param("lat") double lat,
+													   @Param("lon") double lon,
+													   @Param("limit") int limit);
 }

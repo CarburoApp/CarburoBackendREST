@@ -1,5 +1,6 @@
 package app.carburo.api.backend.services;
 
+import app.carburo.api.backend.dto.ComunidadAutonomaDto;
 import app.carburo.api.backend.entities.ComunidadAutonoma;
 import app.carburo.api.backend.repositories.ComunidadAutonomaRepoository;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,26 @@ public class ComunidadAutonomaService {
 		return ccaa;
 	}
 
+	public List<ComunidadAutonomaDto> getComunidadesAutonomasDTO() {
+		List<ComunidadAutonomaDto> ccaa = new ArrayList<>();
+		comunidadAutonomaRepository.findAll()
+				.forEach(ca -> ccaa.add(ComunidadAutonomaDto.from(ca)));
+		return ccaa;
+	}
+
+	public List<ComunidadAutonomaDto> getComunidadesAutonomasDto() {
+		List<ComunidadAutonomaDto> ccaa = new ArrayList<>();
+		comunidadAutonomaRepository.findAll()
+				.forEach(ca -> ccaa.add(ComunidadAutonomaDto.from(ca)));
+		return ccaa;
+	}
+
 	public Optional<ComunidadAutonoma> getComunidadAutonomaById(short idCCAA) {
 		return comunidadAutonomaRepository.findComunidadAutonomaById(idCCAA);
 	}
+
+	public boolean existsById(short id) {
+		return comunidadAutonomaRepository.existsById(id);
+	}
+
 }

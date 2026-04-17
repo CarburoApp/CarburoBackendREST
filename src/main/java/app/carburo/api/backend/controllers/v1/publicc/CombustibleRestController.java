@@ -1,5 +1,6 @@
 package app.carburo.api.backend.controllers.v1.publicc;
 
+import app.carburo.api.backend.controllers.utilities.ApiResponse;
 import app.carburo.api.backend.dto.CombustibleDto;
 import app.carburo.api.backend.services.CombustibleService;
 import org.springframework.http.ResponseEntity;
@@ -9,18 +10,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_BASE_PATH_COMBUSTIBLES;
+import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_ENDPOINT_COMBUSTIBLES;
 
 /**
  * Controlador REST público de combustibles.
  * <p>
  * Expone endpoints de lectura de combustibles dentro de la API v1 pública.
- * No requiere autenticación JWT (puede estar protegido por API Key a nivel global).
+ * No requiere autenticación JWT (está protegido por API Key a nivel global).
  * <p>
  * Ruta: /api/v1/public/combustibles
  */
 @RestController
-@RequestMapping(API_BASE_PATH_COMBUSTIBLES)
+@RequestMapping(API_ENDPOINT_COMBUSTIBLES)
 public class CombustibleRestController {
 
 	private final CombustibleService combustibleService;
@@ -43,8 +44,8 @@ public class CombustibleRestController {
 	 * y código HTTP 200 OK
 	 */
 	@GetMapping
-	public ResponseEntity<List<CombustibleDto>> doGetCombustibles() {
+	public ResponseEntity<ApiResponse<List<CombustibleDto>>> doGetCombustibles() {
 		List<CombustibleDto> combustibles = combustibleService.getCombustiblesDto();
-		return ResponseEntity.ok(combustibles);
+		return ResponseEntity.ok(ApiResponse.success(combustibles));
 	}
 }

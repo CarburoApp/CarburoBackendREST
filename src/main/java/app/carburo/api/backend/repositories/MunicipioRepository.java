@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,4 +31,19 @@ public interface MunicipioRepository extends CrudRepository<Municipio, Short> {
 			"WHERE m.provincia = :provincia " +
 			"ORDER BY m.denominacion ASC")
 	List<Municipio> findMunicipioByProvinciaConEESS(@Param("provincia") Provincia provincia);
+
+	@Query("SELECT DISTINCT m " +
+			"FROM Municipio m " +
+			"WHERE m.provincia.id = :provincia " +
+			"ORDER BY m.denominacion ASC")
+	List<Municipio> findMunicipioByProvincia(@Param("provincia") short idProvincia);
+
+	@Query("SELECT DISTINCT m " +
+			"FROM Municipio m " +
+			"JOIN m.estacionesDeServicio e " +
+			"WHERE m.provincia.id = :provincia " +
+			"ORDER BY m.denominacion ASC")
+	List<Municipio> findMunicipioByProvinciaConEESS(@Param("provincia") short provinciaId);
+
+	Provincia id(short id);
 }

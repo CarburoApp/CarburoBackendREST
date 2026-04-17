@@ -1,5 +1,6 @@
 package app.carburo.api.backend.services;
 
+import app.carburo.api.backend.dto.ProvinciaDto;
 import app.carburo.api.backend.entities.ComunidadAutonoma;
 import app.carburo.api.backend.entities.Provincia;
 import app.carburo.api.backend.repositories.ProvinciaRepository;
@@ -31,6 +32,13 @@ public class ProvinciaService {
 	 */
 	public ProvinciaService(ProvinciaRepository provinciaRepository) {
 		this.provinciaRepository = provinciaRepository;
+	}
+
+	public List<ProvinciaDto> getProvinciasDTO() {
+		List<ProvinciaDto> provincias = new ArrayList<>();
+		provinciaRepository.findAll()
+				.forEach(provincia -> provincias.add(ProvinciaDto.from(provincia)));
+		return provincias;
 	}
 
 	/**
@@ -85,5 +93,9 @@ public class ProvinciaService {
 	 */
 	public Optional<Provincia> getProvinciaById(short provinciaFavorita) {
 		return provinciaRepository.findProvinciaById(provinciaFavorita);
+	}
+
+	public boolean existsById(short id) {
+		return provinciaRepository.existsById(id);
 	}
 }

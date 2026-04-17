@@ -1,24 +1,21 @@
 package app.carburo.api.backend.dto;
 
 import app.carburo.api.backend.entities.Combustible;
-import lombok.Getter;
 
-@Getter
-public class CombustibleDto {
+/**
+ * DTO de {@link Combustible}. Diseñado para su uso en peticiones REST.
+ */
+public record CombustibleDto(
+		short id,
+		String denominacion,
+		String codigo
+) {
 
-	public short id;
-	public String denominacion;
-	public String codigo;
-
-	public CombustibleDto(short id, String denominacion, String codigo) {
-		this.id             = id;
-		this.denominacion   = denominacion;
-		this.codigo         = codigo;
-	}
-
-	public CombustibleDto(Combustible combustible) {
-		this.id             = combustible.getId();
-		this.denominacion   = combustible.getDenominacion();
-		this.codigo         = combustible.getCodigo();
+	public static CombustibleDto from(Combustible c) {
+		return new CombustibleDto(
+				c.getId(),
+				c.getDenominacion(),
+				c.getCodigo()
+		);
 	}
 }
