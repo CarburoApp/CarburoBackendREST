@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_ENDPOINT_COMUNIDADES_AUTONOMAS;
+import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_ENDPOINT_COMUNIDADES_AUTONOMAS_PROVINCIAS_MUNICIPIOS;
 
 /**
  * Controlador REST público de comunidadesAutonomas.
@@ -46,7 +47,25 @@ public class ComunidadAutonomaRestController {
 	 */
 	@GetMapping
 	public ResponseEntity<ApiResponse<List<ComunidadAutonomaDto>>> doGetComunidadesAutonomas() {
-		List<ComunidadAutonomaDto> comunidadesAutonomas = comunidadesAutonomasService.getComunidadesAutonomasDTO();
+		List<ComunidadAutonomaDto> comunidadesAutonomas = comunidadesAutonomasService.getComunidadesAutonomasDto();
 		return ResponseEntity.ok(ApiResponse.success(comunidadesAutonomas));
 	}
+
+	/**
+	 * Obtiene el listado completo de comunidadesAutonomas disponibles junto con todos los
+	 * datos de provincias y municipios anidados.
+	 *
+	 * <p>
+	 * Endpoint: GET /api/v1/public/comunidadesAutonomas/provincias/municipios
+	 * </p>
+	 *
+	 * @return {@link ResponseEntity} con lista de {@link ComunidadAutonomaDto} con el
+	 * resto de datos anidados y código HTTP 200 OK
+	 */
+	@GetMapping(API_ENDPOINT_COMUNIDADES_AUTONOMAS_PROVINCIAS_MUNICIPIOS)
+	public ResponseEntity<ApiResponse<List<ComunidadAutonomaDto>>> doGetComunidadesAutonomasFullNested() {
+		List<ComunidadAutonomaDto> comunidadesAutonomas = comunidadesAutonomasService.getComunidadesAutonomasDtoFullNested();
+		return ResponseEntity.ok(ApiResponse.success(comunidadesAutonomas));
+	}
+
 }

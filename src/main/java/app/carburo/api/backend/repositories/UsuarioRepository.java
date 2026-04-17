@@ -11,11 +11,4 @@ import java.util.UUID;
  */
 public interface UsuarioRepository extends CrudRepository<Usuario, UUID> {
 
-    /**
-     * Comprueba si existe un usuario con el correo electrónico indicado.
-     *
-     * @param email correo electrónico del usuario
-     * @return true si existe un usuario con ese correo, false en caso contrario
-     */
-    boolean existsUsuarioByEmail(String email);
 }

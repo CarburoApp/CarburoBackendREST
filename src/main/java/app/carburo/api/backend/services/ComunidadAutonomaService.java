@@ -19,16 +19,10 @@ public class ComunidadAutonomaService {
 		this.comunidadAutonomaRepository = comunidadAutonomaRepository;
 	}
 
-	public List<ComunidadAutonoma> getComunidadesAutonomas() {
-		List<ComunidadAutonoma> ccaa = new ArrayList<>();
-		comunidadAutonomaRepository.findAll().forEach(ccaa::add);
-		return ccaa;
-	}
-
-	public List<ComunidadAutonomaDto> getComunidadesAutonomasDTO() {
+	public List<ComunidadAutonomaDto> getComunidadesAutonomasDtoFullNested() {
 		List<ComunidadAutonomaDto> ccaa = new ArrayList<>();
 		comunidadAutonomaRepository.findAll()
-				.forEach(ca -> ccaa.add(ComunidadAutonomaDto.from(ca)));
+				.forEach(ca -> ccaa.add(ComunidadAutonomaDto.fromWithProvincias(ca)));
 		return ccaa;
 	}
 
@@ -42,9 +36,4 @@ public class ComunidadAutonomaService {
 	public Optional<ComunidadAutonoma> getComunidadAutonomaById(short idCCAA) {
 		return comunidadAutonomaRepository.findComunidadAutonomaById(idCCAA);
 	}
-
-	public boolean existsById(short id) {
-		return comunidadAutonomaRepository.existsById(id);
-	}
-
 }

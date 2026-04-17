@@ -78,7 +78,7 @@ public class MunicipioRestController {
 	 * y código HTTP 200 OK
 	 */
 	@GetMapping(
-			API_ENDPOINT_MUNICIPIOS_PROVINCIA + "{id}" +
+			API_ENDPOINT_MUNICIPIOS_PROVINCIA + "/{id}" +
 					API_ENDPOINT_MUNICIPIOS_EESS_EXISTENTES
 	)
 	public ResponseEntity<ApiResponse<List<MunicipioDto>>> doGetMunicipiosByProvinciaConEstacionesDeServicio(
