@@ -61,6 +61,26 @@ Estas variables se utilizan en **`application.properties`** para configurar Spri
 > ⚠️ **Importante:**  
 > Si estas variables no se definen correctamente, el backend **no podrá establecer conexión con la base de datos** y los endpoints dejarán de funcionar.
 
+
+
+### 2️⃣Variables de seguridad (API + JWT)
+
+| Variable            | Descripción                                                    |
+|---------------------|----------------------------------------------------------------|
+| `PUBLIC_API_KEY`    | API Key requerida para acceder a endpoints públicos protegidos |
+| `SUPABASE_ISSUER`   | Issuer del JWT de Supabase                                     |
+| `SUPABASE_JWKS_URL` | URL del JWKS para validación de tokens JWT                     |
+
+#### 🚨 Importante sobre seguridad
+
+- Todos los endpoints bajo `/api/v1/public/**` están protegidos por **API Key**
+- La API Key debe enviarse en el header: `X-API-KEY: tu_api_key`
+
+- El sistema JWT se usa para endpoints privados (auth futura o interna)
+- Si la API Key es incorrecta → se devuelve:
+    - `401 UNAUTHORIZED`
+    - `Invalid API Key`
+
 ---
 
 ## 🔄 Funcionamiento general
