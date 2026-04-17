@@ -1,7 +1,6 @@
 package app.carburo.api.backend.dto;
 
 import app.carburo.api.backend.entities.Municipio;
-import app.carburo.api.backend.entities.Provincia;
 
 /**
  * DTO de {@link Municipio}. Diseñado para su uso en peticiones REST.

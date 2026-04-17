@@ -20,7 +20,6 @@ import java.util.List;
 public class EstacionDeServicioService {
 
 	private final EstacionDeServicioRepository estacionDeServicioRepository;
-	private final CombustibleService combustibleService;
 	private final ComunidadAutonomaRepoository comunidadAutonomaRepository;
 	private final ProvinciaRepository provinciaRepository;
 	private final MunicipioRepository municipioRepository;
@@ -33,13 +32,11 @@ public class EstacionDeServicioService {
 			EstacionDeServicioRepository estacionDeServicioRepository,
 			ComunidadAutonomaRepoository comunidadAutonomaRepository,
 			ProvinciaRepository provinciaRepository,
-			MunicipioRepository municipioRepository,
-			CombustibleService combustibleService) {
+			MunicipioRepository municipioRepository) {
 		this.estacionDeServicioRepository = estacionDeServicioRepository;
 		this.comunidadAutonomaRepository  = comunidadAutonomaRepository;
 		this.provinciaRepository          = provinciaRepository;
 		this.municipioRepository          = municipioRepository;
-		this.combustibleService           = combustibleService;
 	}
 
 	public List<EstacionDeServicioDto> getEstacionesDeServicioDto() {
