@@ -54,6 +54,7 @@ public final class HttpConstants {
 	public static final String CONTENT_TYPE_JSON = "application/json";
 	public static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded";
 	public static final String CONTENT_TYPE_MULTIPART = "multipart/form-data";
+	public static final String CONTENT_CHARACTER_ENCODING = "UTF-8";
 
 	// =========================
 	// COMMON RESPONSE HEADERS
