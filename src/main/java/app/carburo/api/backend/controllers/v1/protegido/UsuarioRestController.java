@@ -14,16 +14,16 @@ import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_EN
  * <p>
  * Ruta: /api/v1/usuarios
  */
-//@RestController
-//@RequestMapping(API_ENDPOINT_USUARIOS)
+@RestController
+@RequestMapping(API_ENDPOINT_USUARIOS)
 public class UsuarioRestController {
 
-	private final UsuarioService usuarioService;
+	//private final UsuarioService usuarioService;
 
 	/**
 	 * Inyección de dependencias del servicio de usuarios.
 	 */
-	public UsuarioRestController(UsuarioService usuarioService) {
-		this.usuarioService = usuarioService;
-	}
+//	public UsuarioRestController(UsuarioService usuarioService) {
+//		this.usuarioService = usuarioService;
+//	}
 }
