@@ -10,7 +10,7 @@ import java.util.List;
 public record ProvinciaDto(
 		short id,
 		String denominacion,
-		short id_comunidadAutonoma,
+		short id_comunidad_autonoma,
 		List<MunicipioDto> municipios
 ) {
 	public static ProvinciaDto from(Provincia p) {
