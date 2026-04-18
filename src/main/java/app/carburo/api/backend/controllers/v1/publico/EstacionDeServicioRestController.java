@@ -49,6 +49,24 @@ public class EstacionDeServicioRestController {
 	}
 
 	/**
+	 * Obtiene la EstacionesDeServicio con el id indicado.
+	 *
+	 * <p>
+	 * Endpoint: GET /api/v1/public/EstacionesDeServicio/{id}
+	 * </p>
+	 *
+	 * @return {@link ResponseEntity} con la{@link EstacionDeServicioDto}
+	 * y código HTTP 200 OK
+	 */
+	@GetMapping("/{id}")
+	public ResponseEntity<ApiResponse<EstacionDeServicioDto>> doGetEstacionDeServicio(
+			int id) {
+		EstacionDeServicioDto estacionDeServicio = estacionDeServicioService.getEstacionDeServicioDtoById(
+				id);
+		return ResponseEntity.ok(ApiResponse.success(estacionDeServicio));
+	}
+
+	/**
 	 * Obtiene estaciones por municipio.
 	 * Endpoint: GET /api/v1/public/estaciones-de-servicio/municipio/{id}
 	 */
@@ -98,30 +116,30 @@ public class EstacionDeServicioRestController {
 	 * Endpoint:
 	 * GET /api/v1/public/estaciones-de-servicio/cercanas?lat={lat}&lon={lon}&limit={limit}
 	 * <p>
-	 * - lat: latitud (obligatoria)
-	 * - lon: longitud (obligatoria)
-	 * - limit: número máximo de resultados (opcional, default 1)
+	 * - latitud: latitud (obligatoria)
+	 * - longitud: longitud (obligatoria)
+	 * - limite: número máximo de resultados (opcional, default 1)
 	 */
 	@GetMapping(API_ENDPOINT_ESTACIONES_DE_SERVICIO_CERCANAS)
 	public ResponseEntity<ApiResponse<List<EstacionDeServicioDto>>> doGetEstacionesCercanas(
-			@RequestParam double lat, @RequestParam double lon,
-			@RequestParam(required = false, defaultValue = "1") int limit) {
-		if (lat < -90 || lat > 90) {
+			@RequestParam double latitud, @RequestParam double longitud,
+			@RequestParam(required = false, defaultValue = "1") int limite) {
+		if (latitud < -90 || latitud > 90) {
 			return ResponseEntity.badRequest().body(ApiResponse.error("BAD_REQUEST",
 																	  "latitud fuera de rango válido (-90 a 90)"));
 		}
 
-		if (lon < -180 || lon > 180) {
+		if (longitud < -180 || longitud > 180) {
 			return ResponseEntity.badRequest().body(ApiResponse.error("BAD_REQUEST",
 																	  "longitud fuera de rango válido (-180 a 180)"));
 		}
 
-		if (limit <= 0 || limit > 10) {
-			limit = 10;
+		if (limite <= 0 || limite > 10) {
+			limite = 10;
 		}
 
 		List<EstacionDeServicioDto> result = estacionDeServicioService.getEstacionesDeServicioDtoCercanas(
-				lat, lon, limit);
+				latitud, longitud, limite);
 
 		return ResponseEntity.ok(ApiResponse.success(result));
 	}

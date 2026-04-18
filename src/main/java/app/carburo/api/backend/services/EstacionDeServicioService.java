@@ -50,28 +50,11 @@ public class EstacionDeServicioService {
 	 * Devuelve una estación de servicio según su ID
 	 */
 	public EstacionDeServicioDto getEstacionDeServicioDtoById(int id) {
+		if (!estacionDeServicioRepository.existsById(id))
+			throw new ResourceNotFoundException(
+					"Estación de servicio no encontrada con id: " + id);
 		return EstacionDeServicioDto.from(
 				estacionDeServicioRepository.findEstacionDeServicioById(id));
-	}
-
-	/**
-	 * Obtiene la estación de servicio más cercana a una ubicación dada.
-	 *
-	 * <p>La búsqueda se realiza utilizando coordenadas geográficas
-	 * en sistema WGS84 (latitud y longitud). El cálculo de proximidad
-	 * se delega al repositorio, que hace uso de funciones espaciales
-	 * de PostGIS.</p>
-	 *
-	 * @param latitud  latitud del punto de referencia (WGS84)
-	 * @param longitud longitud del punto de referencia (WGS84)
-	 * @return la estación de servicio más cercana a las coordenadas indicadas,
-	 *         o {@code null} si no existe ninguna
-	 */
-	public EstacionDeServicioDto getEstacionDeServicioMasProxima(double latitud,
-																 double longitud) {
-		return EstacionDeServicioDto.from(
-				estacionDeServicioRepository.findEstacionDeServicioMasCercana(latitud,
-																			  longitud));
 	}
 
 	/**
