@@ -6,7 +6,6 @@ import app.carburo.api.backend.entities.enums.Venta;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
