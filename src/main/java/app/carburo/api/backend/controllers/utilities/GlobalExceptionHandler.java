@@ -95,15 +95,4 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(ApiResponse.error(ERR_BAD_REQUEST, ex.getMessage()));
 	}
-
-	// =========================
-	// FALLBACK
-	// =========================
-	@ExceptionHandler(Exception.class)
-	public ResponseEntity<ApiResponse<Void>> handleGeneric(Exception ex) {
-		ex.printStackTrace();
-
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(ApiResponse.error(ERR_INTERNAL, "Error interno del servidor"));
-	}
 }
