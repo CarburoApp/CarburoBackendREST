@@ -87,7 +87,7 @@ public class EstacionDeServicioService {
 		if (dias > MAX_DIAS) dias = MAX_DIAS;
 
 		LocalDate hoy = LocalDate.now();
-		LocalDate fechaInicio = hoy.minusDays(dias - 1);
+		LocalDate fechaInicio = hoy.minusDays(Integer.valueOf(dias - 1).longValue());
 
 		return precioCombustibleRepository.findByEstacion_IdAndId_FechaBetween(id,
 																			   fechaInicio,
