@@ -2,6 +2,7 @@ package app.carburo.api.backend.config;
 
 import app.carburo.api.backend.controllers.utilities.ApiResponse;
 import app.carburo.api.backend.controllers.utilities.HttpConstants;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -97,7 +98,13 @@ public class SupabaseJwtFilter extends OncePerRequestFilter {
 		}
 
 		String token = authHeader.substring(HttpConstants.AUTH_BEARER_PREFIX.length());
-		JwtUser user = JwtValidator.validateWithJwks(token, jwksUrl, issuer);
+		JwtUser user;
+		try {
+			user = JwtValidator.validateWithJwks(token, jwksUrl, issuer);
+		} catch (TokenExpiredException e) {
+			writeError(response, ERR_UNAUTHORIZED, e.getMessage());
+			return;
+		}
 
 		if (user == null) {
 			writeError(response, ERR_UNAUTHORIZED, ERR_INVALID_TOKEN);

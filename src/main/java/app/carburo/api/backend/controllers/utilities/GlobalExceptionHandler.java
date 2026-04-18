@@ -2,7 +2,9 @@ package app.carburo.api.backend.controllers.utilities;
 
 import app.carburo.api.backend.exceptions.InvalidUsuarioDataException;
 import app.carburo.api.backend.exceptions.ResourceNotFoundException;
+import app.carburo.api.backend.exceptions.UnauthorizedException;
 import app.carburo.api.backend.exceptions.UsuarioAlreadyExistsException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
@@ -44,6 +46,20 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiResponse<Void>> handleBadRequest(BadRequestException ex) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(ApiResponse.error(ERR_BAD_REQUEST, ex.getMessage()));
+	}
+
+	@ExceptionHandler(UnauthorizedException.class)
+	public ResponseEntity<ApiResponse<Void>> handleUnauthorized(
+			UnauthorizedException ex) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(ApiResponse.error(ERR_UNAUTHORIZED, ex.getMessage()));
+	}
+
+	@ExceptionHandler(TokenExpiredException.class)
+	public ResponseEntity<ApiResponse<Void>> handleTokenExpired(
+			TokenExpiredException ex) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(ApiResponse.error(ERR_UNAUTHORIZED, ex.getMessage()));
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)

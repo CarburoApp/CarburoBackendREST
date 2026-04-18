@@ -3,16 +3,16 @@ package app.carburo.api.backend.controllers.v1.protegido;
 import app.carburo.api.backend.config.JwtUser;
 import app.carburo.api.backend.controllers.utilities.ApiResponse;
 import app.carburo.api.backend.dto.UsuarioDto;
+import app.carburo.api.backend.exceptions.UnauthorizedException;
 import app.carburo.api.backend.services.UsuarioService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_ENDPOINT_USUARIOS;
-import static app.carburo.api.backend.controllers.utilities.HttpConstants.ERR_UNAUTHORIZED;
 
 /**
  * Controlador REST público de usuarios.
@@ -36,24 +36,37 @@ public class UsuarioRestController {
 		this.usuarioService = usuarioService;
 	}
 
+	@GetMapping("/{uuid}")
+	public ResponseEntity<ApiResponse<UsuarioDto>> getUsuario(@PathVariable UUID uuid) {
 
-	@GetMapping
-	public ResponseEntity<ApiResponse<String>> doGetUsuario() {
-		return ResponseEntity.ok(ApiResponse.success("Hola"));
+		JwtUser auth = getAuthUser();
+		validateOwnership(uuid, auth);
+
+		return ResponseEntity.ok(ApiResponse.success(usuarioService.getUsuario(uuid)));
 	}
 
 	@PostMapping
 	public ResponseEntity<ApiResponse<Void>> doPostCreacionUsuario(
 			@RequestBody UsuarioDto dto) {
-		JwtUser authUser = (JwtUser) Objects.requireNonNull(
-				SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
-		if (dto == null || dto.uuid() == null || authUser == null ||
-				!dto.uuid().equals(authUser.uuid())) {
-			return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
-					.body(ApiResponse.error(ERR_UNAUTHORIZED, "UUID mismatch"));
-		}
+
+		JwtUser auth = getAuthUser();
+		validateOwnership(dto.uuid(), auth);
+
 		usuarioService.createUsuario(dto);
+
 		return ResponseEntity.ok(ApiResponse.success(null));
 	}
 
+	private JwtUser getAuthUser() {
+		return (JwtUser) Objects.requireNonNull(
+				SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
+	}
+
+	private void validateOwnership(UUID requestUuid, JwtUser authUser) {
+		if (requestUuid == null || authUser == null ||
+				!requestUuid.equals(authUser.uuid())) {
+
+			throw new UnauthorizedException("UUID mismatch");
+		}
+	}
 }

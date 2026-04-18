@@ -4,6 +4,8 @@ import app.carburo.api.backend.entities.Combustible;
 import app.carburo.api.backend.entities.EstacionDeServicio;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * DTO de {@link EstacionDeServicio}. Diseñado para su uso en peticiones REST.
@@ -29,7 +31,7 @@ public record EstacionDeServicioDto(
 
 		Long distancia_metros,
 
-		List<Short> id_combustibles_disponibles,
+		Set<Short> id_combustibles_disponibles,
 
 		List<PrecioCombustibleDto> precios_de_combustibles
 ) {
@@ -76,7 +78,8 @@ public record EstacionDeServicioDto(
 				e.isAbierto(),
 
 				distancia_metros,
-				e.getCombustiblesDisponibles().stream().map(Combustible::getId).toList(),
+				e.getCombustiblesDisponibles().stream().map(Combustible::getId).collect(
+						Collectors.toSet()),
 				e.getPreciosCombustibles().stream().map(PrecioCombustibleDto::from)
 						.toList()
 		);

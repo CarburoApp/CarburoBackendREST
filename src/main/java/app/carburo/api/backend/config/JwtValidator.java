@@ -5,6 +5,7 @@ import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.JwkProviderBuilder;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 
@@ -91,6 +92,8 @@ public class JwtValidator {
 
 			return new JwtUser(UUID.fromString(userId));
 
+		} catch (TokenExpiredException e) {
+			throw e;
 		} catch (Exception e) {
 			// Error en validación → token inválido
 			e.printStackTrace();

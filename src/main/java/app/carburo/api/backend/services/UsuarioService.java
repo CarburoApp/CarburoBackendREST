@@ -52,6 +52,13 @@ public class UsuarioService {
         this.combustibleRepository = combustibleRepository;
     }
 
+    public UsuarioDto getUsuario(UUID uuid) {
+        Usuario usuario = usuarioRepository.findById(uuid).orElseThrow(
+                () -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        return UsuarioDto.from(usuario);
+    }
+
 
     @Transactional
     public void createUsuario(UsuarioDto dto) {
@@ -63,14 +70,12 @@ public class UsuarioService {
             throw new UsuarioAlreadyExistsException(dto.uuid());
         }
 
-        Usuario usuario = new Usuario();
-        usuario.setUuid(dto.uuid());
-
         // Provincia
         Provincia provincia = provinciaRepository.findById(dto.id_provincia_favorita())
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Provincia no encontrada"));
-        usuario.setProvinciaFavorita(provincia);
+
+        Usuario usuario = new Usuario(dto.uuid(), provincia);
 
         // Combustibles
         if (dto.ids_combustibles_favoritos() == null) {
