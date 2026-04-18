@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
  */
 public record UsuarioDto(
 		UUID uuid,
-		short id_provincia_favorita, Set<Short> ids_combustibles_favoritos,
+		short id_provincia_favorita,
+		Set<Short> ids_combustibles_favoritos,
 		Set<Integer> ids_estaciones_de_servicio_favoritas
 ) {
 
