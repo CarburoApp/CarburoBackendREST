@@ -28,7 +28,7 @@ jobs:
         run: mv target/CarburoBackendREST-*.jar CarburoBackendREST.jar
 
       - name: Upload JAR to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: CarburoBackendREST.jar
         env:
