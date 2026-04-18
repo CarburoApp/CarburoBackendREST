@@ -28,6 +28,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
 	@Value("${security.api.key}")
 	private String apiKey;
+
 	private final ObjectMapper objectMapper;
 
 	/**
@@ -54,7 +55,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
 		String path = request.getRequestURI();
 
-		if (path.startsWith(API_BASE_PATH + API_BASE_PATH_PUBLIC)) {
+		if (path.startsWith(API_BASE_PATH + API_BASE_PATH_VERSION_V1)) {
 			String headerKey = request.getHeader(HEADER_API_KEY);
 			if (headerKey == null || !headerKey.equals(apiKey)) {
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

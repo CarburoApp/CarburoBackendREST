@@ -1,5 +1,9 @@
 package app.carburo.api.backend.controllers.v1.protegido;
 
+import app.carburo.api.backend.controllers.utilities.ApiResponse;
+import app.carburo.api.backend.dto.CombustibleDto;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,4 +29,11 @@ public class UsuarioRestController {
 //	public UsuarioRestController(UsuarioService usuarioService) {
 //		this.usuarioService = usuarioService;
 //	}
+
+
+	@GetMapping
+	public ResponseEntity<ApiResponse<String>> doGetUsuario() {
+		return ResponseEntity.ok(ApiResponse.success("Hola"));
+	}
+
 }

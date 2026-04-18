@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_BASE_PATH_PUBLIC;
 import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_BASE_PATH_VERSION_V1;
@@ -42,7 +43,9 @@ public class WebSecurityConfig {
 	 * </p>
 	 */
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http,
+												   ApiKeyFilter apiKeyFilter,
+												   SupabaseJwtFilter jwtFilter) {
 		http
 
 				.csrf(AbstractHttpConfigurer::disable)
@@ -58,7 +61,10 @@ public class WebSecurityConfig {
 						.requestMatchers(API_BASE_PATH_PUBLIC + "/**").permitAll()
 						.requestMatchers(API_BASE_PATH_VERSION_V1 + "/**").authenticated()
 
-						.anyRequest().denyAll());
+						.anyRequest().denyAll())
+
+				.addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class)
+				.addFilterAfter(jwtFilter, ApiKeyFilter.class);
 		return http.build();
 	}
 
