@@ -1,6 +1,5 @@
 package app.carburo.api.backend.controllers.v1.protegido;
 
-import app.carburo.api.backend.services.UsuarioService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

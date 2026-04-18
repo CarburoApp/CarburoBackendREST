@@ -11,13 +11,9 @@ import java.util.List;
 public record EstacionDeServicioDto(
 		int id,
 		String rotulo,
-		String horario,
-		String direccion,
-		String localidad,
-		int codigoPostal,
+		String horario, String direccion, String localidad, int codigo_postal,
 
-		short municipio,
-		short provincia,
+		short id_municipio, short id_provincia,
 
 		double latitud,
 		double longitud,
@@ -31,9 +27,12 @@ public record EstacionDeServicioDto(
 
 		boolean abierto,
 
-		List<Short> combustibles
-) {
+		Long distancia_metros,
 
+		List<Short> id_combustibles_disponibles,
+
+		List<PrecioCombustibleDto> precios_de_combustibles
+) {
 	/**
 	 * Convierte una entidad EstacionDeServicio a DTO.
 	 *
@@ -41,6 +40,18 @@ public record EstacionDeServicioDto(
 	 * @return DTO con los datos mapeados
 	 */
 	public static EstacionDeServicioDto from(EstacionDeServicio e) {
+		return EstacionDeServicioDto.from(e, null);
+	}
+
+	/**
+	 * Convierte una entidad EstacionDeServicio a DTO indicando la distancia en metros también.
+	 *
+	 * @param e                entidad origen
+	 * @param distancia_metros distancia en metros
+	 * @return DTO con los datos mapeados
+	 */
+	public static EstacionDeServicioDto from(EstacionDeServicio e,
+											 Long distancia_metros) {
 		return new EstacionDeServicioDto(
 				e.getId(),
 				e.getRotulo(),
@@ -64,10 +75,11 @@ public record EstacionDeServicioDto(
 
 				e.isAbierto(),
 
-				e.getCombustiblesDisponibles()
-						.stream()
-						.map(Combustible::getId)
+				distancia_metros,
+				e.getCombustiblesDisponibles().stream().map(Combustible::getId).toList(),
+				e.getPreciosCombustibles().stream().map(PrecioCombustibleDto::from)
 						.toList()
 		);
 	}
+
 }

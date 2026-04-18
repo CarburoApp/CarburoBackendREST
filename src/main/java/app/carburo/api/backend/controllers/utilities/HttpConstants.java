@@ -113,6 +113,7 @@ public final class HttpConstants {
 
 	// --- VALIDACIÓN ---
 	public static final String ERR_BAD_REQUEST = "BAD_REQUEST";
+	public static final String ERR_INTERNAL = "INTERNAL_ERROR";
 	public static final String ERR_INVALID_PARAMETER = "Invalid parameter";
 	public static final String ERR_MISSING_PARAMETER = "Missing parameter";
 	public static final String ERR_TYPE_MISMATCH = "Type mismatch";

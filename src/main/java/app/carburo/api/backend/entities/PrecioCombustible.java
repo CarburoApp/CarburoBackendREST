@@ -25,6 +25,8 @@ import java.util.Objects;
 @NoArgsConstructor
 public class PrecioCombustible {
 
+	public static final LocalDate FECHA_MINIMA = LocalDate.of(2007, 1, 1);
+
 	// ==============================
 	// CAMPOS
 	// ==============================

@@ -1,8 +1,6 @@
 package app.carburo.api.backend.repositories;
 
 import app.carburo.api.backend.entities.EstacionDeServicio;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -16,9 +14,6 @@ import java.util.List;
  */
 @Repository
 public interface EstacionDeServicioRepository extends CrudRepository<EstacionDeServicio, Integer> {
-
-	/** Devuelve todas las estaciones de servicio paginadas */
-	Page<EstacionDeServicio> findAll(Pageable pageable);
 
 	/** Devuelve una estación de servicio según su ID */
 	EstacionDeServicio findEstacionDeServicioById(int id);
@@ -54,15 +49,9 @@ public interface EstacionDeServicioRepository extends CrudRepository<EstacionDeS
 	 *
 	 * @param lat latitud WGS84
 	 * @param lon longitud WGS84
+	 * @param limit limite de estaciones de servicio a devolver
 	 * @return estación de servicio más cercana o null si no existe
 	 */
-	@Query(
-			value = " SELECT * FROM eess ORDER BY coordenadas<-> ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography LIMIT 1",
-			nativeQuery = true
-	)
-	EstacionDeServicio findEstacionDeServicioMasCercana(@Param("lat") double lat,
-														@Param("lon") double lon);
-
 	@Query(
 			value = """
 					    SELECT *
@@ -74,4 +63,29 @@ public interface EstacionDeServicioRepository extends CrudRepository<EstacionDeS
 	List<EstacionDeServicio> findEstacionDeServicioMasCercana(@Param("lat") double lat,
 													   @Param("lon") double lon,
 													   @Param("limit") int limit);
+
+	/**
+	 * Devuelve la distancia a la estación de servicio con el id indicado y unas coordenadas dadas.
+	 *
+	 * <p>Utiliza funciones espaciales de PostGIS y el operador de distancia
+	 * optimizado {@code <->}, que hace uso del índice GIST sobre el campo
+	 * {@code coordenadas}.</p>
+	 *
+	 * @param id  identificador de la estación de servicio
+	 * @param lat latitud WGS84
+	 * @param lon longitud WGS84
+	 * @return estación de servicio más cercana o null si no existe
+	 */
+	@Query(
+			value = """
+					    SELECT ST_Distance(
+					        e.coordenadas,
+					        ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography
+					    )
+					    FROM eess e
+					    WHERE e.id = :id
+					""", nativeQuery = true
+	)
+	Long findDistanciaById(@Param("id") int id, @Param("lat") double lat,
+						   @Param("lon") double lon);
 }

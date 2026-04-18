@@ -1,14 +1,15 @@
 package app.carburo.api.backend.services;
 
 import app.carburo.api.backend.dto.EstacionDeServicioDto;
+import app.carburo.api.backend.dto.PrecioCombustibleDto;
 import app.carburo.api.backend.entities.EstacionDeServicio;
+import app.carburo.api.backend.entities.PrecioCombustible;
 import app.carburo.api.backend.exceptions.ResourceNotFoundException;
-import app.carburo.api.backend.repositories.ComunidadAutonomaRepoository;
-import app.carburo.api.backend.repositories.EstacionDeServicioRepository;
-import app.carburo.api.backend.repositories.MunicipioRepository;
-import app.carburo.api.backend.repositories.ProvinciaRepository;
+import app.carburo.api.backend.repositories.*;
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,10 @@ import java.util.List;
 @Service
 public class EstacionDeServicioService {
 
+	private static final int MAX_DIAS = 30;
+
 	private final EstacionDeServicioRepository estacionDeServicioRepository;
+	private final PrecioCombustibleRepository precioCombustibleRepository;
 	private final ComunidadAutonomaRepoository comunidadAutonomaRepository;
 	private final ProvinciaRepository provinciaRepository;
 	private final MunicipioRepository municipioRepository;
@@ -30,10 +34,12 @@ public class EstacionDeServicioService {
 
 	public EstacionDeServicioService(
 			EstacionDeServicioRepository estacionDeServicioRepository,
+			PrecioCombustibleRepository precioCombustibleRepository,
 			ComunidadAutonomaRepoository comunidadAutonomaRepository,
 			ProvinciaRepository provinciaRepository,
 			MunicipioRepository municipioRepository) {
 		this.estacionDeServicioRepository = estacionDeServicioRepository;
+		this.precioCombustibleRepository = precioCombustibleRepository;
 		this.comunidadAutonomaRepository  = comunidadAutonomaRepository;
 		this.provinciaRepository          = provinciaRepository;
 		this.municipioRepository          = municipioRepository;
@@ -56,6 +62,57 @@ public class EstacionDeServicioService {
 		return EstacionDeServicioDto.from(
 				estacionDeServicioRepository.findEstacionDeServicioById(id));
 	}
+
+	public EstacionDeServicioDto getEstacionDeServicioDtoById(int id, double latitud,
+															  double longitud) {
+		if (!estacionDeServicioRepository.existsById(id))
+			throw new ResourceNotFoundException(
+					"Estación de servicio no encontrada con id: " + id);
+		EstacionDeServicio es = estacionDeServicioRepository.findEstacionDeServicioById(
+				id);
+		Long d = estacionDeServicioRepository.findDistanciaById(es.getId(), latitud,
+																longitud);
+		return EstacionDeServicioDto.from(es, d);
+	}
+
+	public List<PrecioCombustibleDto> getPreciosDeCombustiblesDtoByEstacionDeServicioId(
+			int id, int dias) throws BadRequestException {
+		if (!estacionDeServicioRepository.existsById(id))
+			throw new ResourceNotFoundException(
+					"Estación de servicio no encontrada con id: " + id);
+
+		if (dias <= 0)
+			throw new BadRequestException("El parámetro 'dias' debe ser mayor que 0");
+
+		if (dias > MAX_DIAS) dias = MAX_DIAS;
+
+		LocalDate hoy = LocalDate.now();
+		LocalDate fechaInicio = hoy.minusDays(dias - 1);
+
+		return precioCombustibleRepository.findByEstacion_IdAndId_FechaBetween(id,
+																			   fechaInicio,
+																			   hoy)
+				.stream().map(PrecioCombustibleDto::from).toList();
+	}
+
+	public List<PrecioCombustibleDto> getPreciosDeCombustiblesDtoByEstacionDeServicioIdAndFecha(
+			int id, LocalDate fecha) throws BadRequestException {
+		if (!estacionDeServicioRepository.existsById(id))
+			throw new ResourceNotFoundException(
+					"Estación de servicio no encontrada con id: " + id);
+
+		LocalDate hoy = LocalDate.now();
+
+		if (fecha.isAfter(hoy))
+			throw new BadRequestException("La fecha no puede ser futura");
+
+		if (fecha.isBefore(PrecioCombustible.FECHA_MINIMA)) throw new BadRequestException(
+				"La fecha mínima permitida es " + PrecioCombustible.FECHA_MINIMA);
+
+		return precioCombustibleRepository.findByEstacion_IdAndId_Fecha(id, fecha)
+				.stream().map(PrecioCombustibleDto::from).toList();
+	}
+
 
 	/**
 	 * Devuelve estaciones por comunidad autónoma (DTO)
@@ -107,8 +164,13 @@ public class EstacionDeServicioService {
 		if (limit <= 0) limit = 1;
 		if (limit > 10) limit = 10;
 
-		List<EstacionDeServicio> estaciones = estacionDeServicioRepository.findEstacionDeServicioMasCercana(
-				lat, lon, limit);
-		return estaciones.stream().map(EstacionDeServicioDto::from).toList();
+
+		return estacionDeServicioRepository.findEstacionDeServicioMasCercana(lat, lon,
+																			 limit)
+				.stream().map(eess -> {
+					Long distancia = estacionDeServicioRepository.findDistanciaById(
+							eess.getId(), lat, lon);
+					return EstacionDeServicioDto.from(eess, distancia);
+				}).toList();
 	}
 }
