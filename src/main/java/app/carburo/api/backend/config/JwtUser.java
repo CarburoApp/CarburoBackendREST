@@ -1,5 +1,7 @@
 package app.carburo.api.backend.config;
 
+import java.util.UUID;
+
 /**
  * Representación mínima del usuario autenticado mediante JWT.
  *
@@ -23,5 +25,5 @@ package app.carburo.api.backend.config;
  * </p>
  */
 public record JwtUser(
-		String uuid
+		UUID uuid
 ) {}

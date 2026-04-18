@@ -1,6 +1,8 @@
 package app.carburo.api.backend.controllers.utilities;
 
+import app.carburo.api.backend.exceptions.InvalidUsuarioDataException;
 import app.carburo.api.backend.exceptions.ResourceNotFoundException;
+import app.carburo.api.backend.exceptions.UsuarioAlreadyExistsException;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
@@ -60,6 +62,22 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(ApiResponse.error(ERR_BAD_REQUEST, msg));
+	}
+
+	@ExceptionHandler(UsuarioAlreadyExistsException.class)
+	public ResponseEntity<ApiResponse<Void>> handleUsuarioExists(
+			UsuarioAlreadyExistsException ex) {
+
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(ApiResponse.error(ERR_USER_ALREADY_EXITS, ex.getMessage()));
+	}
+
+	@ExceptionHandler(InvalidUsuarioDataException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvalidUsuario(
+			InvalidUsuarioDataException ex) {
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(ApiResponse.error(ERR_BAD_REQUEST, ex.getMessage()));
 	}
 
 	// =========================

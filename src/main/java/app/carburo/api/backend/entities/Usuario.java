@@ -42,6 +42,14 @@ public class Usuario {
     )
     private Provincia provinciaFavorita;
 
+    @ManyToMany
+    @JoinTable(
+            name = "combustible_favorito",
+            joinColumns = @JoinColumn(name = "uuid_usuario"),
+            inverseJoinColumns = @JoinColumn(name = "id_combustible")
+    )
+    private Set<Combustible> combustiblesFavoritos = new HashSet<>();
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "eess_favoritas",

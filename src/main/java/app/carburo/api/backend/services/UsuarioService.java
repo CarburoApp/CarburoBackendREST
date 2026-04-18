@@ -1,8 +1,14 @@
 package app.carburo.api.backend.services;
 
+import app.carburo.api.backend.dto.UsuarioDto;
 import app.carburo.api.backend.entities.EstacionDeServicio;
 import app.carburo.api.backend.entities.Provincia;
 import app.carburo.api.backend.entities.Usuario;
+import app.carburo.api.backend.exceptions.InvalidUsuarioDataException;
+import app.carburo.api.backend.exceptions.ResourceNotFoundException;
+import app.carburo.api.backend.exceptions.UsuarioAlreadyExistsException;
+import app.carburo.api.backend.repositories.CombustibleRepository;
+import app.carburo.api.backend.repositories.ProvinciaRepository;
 import app.carburo.api.backend.repositories.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -30,27 +36,56 @@ public class UsuarioService {
      * Repositorio de acceso a datos de usuarios.
      */
     private final UsuarioRepository usuarioRepository;
+    private final ProvinciaRepository provinciaRepository;
+    private final CombustibleRepository combustibleRepository;
 
     /**
      * Constructor con inyección de dependencias.
      *
      * @param usuarioRepository repositorio de usuarios
      */
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public UsuarioService(UsuarioRepository usuarioRepository,
+                          ProvinciaRepository provinciaRepository,
+                          CombustibleRepository combustibleRepository) {
+        this.usuarioRepository     = usuarioRepository;
+        this.provinciaRepository   = provinciaRepository;
+        this.combustibleRepository = combustibleRepository;
     }
 
 
-    /**
-     * Guarda un usuario en el sistema.
-     *
-     * @param usuario entidad {@link Usuario} a persistir
-     * @throws IllegalArgumentException si el usuario o su UUID son {@code null}
-     */
-    public void save(Usuario usuario) {
-        if (usuario == null || usuario.getUuid() == null) {
-            throw new IllegalArgumentException("El usuario y su UUID no pueden ser nulos.");
+    @Transactional
+    public void createUsuario(UsuarioDto dto) {
+        if (dto == null || dto.uuid() == null) {
+            throw new InvalidUsuarioDataException("El UUID es obligatorio");
         }
+
+        if (usuarioRepository.existsById(dto.uuid())) {
+            throw new UsuarioAlreadyExistsException(dto.uuid());
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setUuid(dto.uuid());
+
+        // Provincia
+        Provincia provincia = provinciaRepository.findById(dto.id_provincia_favorita())
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Provincia no encontrada"));
+        usuario.setProvinciaFavorita(provincia);
+
+        // Combustibles
+        if (dto.ids_combustibles_favoritos() == null) {
+            usuario.getCombustiblesFavoritos().addAll(combustibleRepository.findAll());
+
+        } else {
+            usuario.getCombustiblesFavoritos()
+                    .addAll(dto.ids_combustibles_favoritos().stream()
+                                    .map(id -> combustibleRepository.findById(id)
+                                            .orElseThrow(
+                                                    () -> new ResourceNotFoundException(
+                                                            "Combustible no encontrado con id: " +
+                                                                    id))).toList());
+        }
+
         usuarioRepository.save(usuario);
     }
 

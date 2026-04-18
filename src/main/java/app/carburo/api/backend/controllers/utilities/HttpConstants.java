@@ -118,6 +118,7 @@ public final class HttpConstants {
 	public static final String ERR_MISSING_PARAMETER = "Missing parameter";
 	public static final String ERR_TYPE_MISMATCH = "Type mismatch";
 	public static final String ERR_VALIDATION_FAILED = "Validation failed";
+	public static final String ERR_USER_ALREADY_EXITS = "USER ALREADY EXISTS";
 
 	// --- RECURSOS ---
 	public static final String ERR_NOT_FOUND = "NOT_FOUND";

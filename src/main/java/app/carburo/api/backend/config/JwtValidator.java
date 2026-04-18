@@ -10,6 +10,7 @@ import com.auth0.jwt.interfaces.JWTVerifier;
 
 import java.net.URL;
 import java.security.interfaces.ECPublicKey;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -88,7 +89,7 @@ public class JwtValidator {
 			// Extrae el UUID del usuario (claim "sub")
 			String userId = jwt.getSubject();
 
-			return new JwtUser(userId);
+			return new JwtUser(UUID.fromString(userId));
 
 		} catch (Exception e) {
 			// Error en validación → token inválido
