@@ -153,27 +153,4 @@ public class Combustible {
 				", extCode=" + extCode +
 				'}';
 	}
-
-	// ==============================
-	// MÉTODOS DE RELACIÓN (OPCIONALES)
-	// ==============================
-
-	/**
-	 * Añade una estación de servicio a la colección.
-	 * Mantener consistencia bidireccional si se usa en toda la aplicación.
-	 * @param estacion Estación de servicio
-	 */
-	public void addEstacionDeServicio(EstacionDeServicio estacion) {
-		this.estacionesDeServicio.add(estacion);
-		// Podrías agregar: estacion.getCombustiblesDisponibles().add(this);
-	}
-
-	/**
-	 * Elimina una estación de servicio de la colección.
-	 * @param estacion Estación de servicio
-	 */
-	public void removeEstacionDeServicio(EstacionDeServicio estacion) {
-		this.estacionesDeServicio.remove(estacion);
-		// Podrías agregar: estacion.getCombustiblesDisponibles().remove(this);
-	}
 }

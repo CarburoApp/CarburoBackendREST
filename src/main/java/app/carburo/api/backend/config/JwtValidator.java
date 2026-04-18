@@ -44,6 +44,8 @@ public class JwtValidator {
 	 */
 	private static JwkProvider provider;
 
+	private JwtValidator() {}
+
 	/**
 	 * Valida un JWT contra el JWKS de Supabase.
 	 *
