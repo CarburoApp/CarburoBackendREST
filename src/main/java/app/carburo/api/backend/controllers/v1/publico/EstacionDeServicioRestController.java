@@ -19,7 +19,7 @@ import static app.carburo.api.backend.controllers.utilities.HttpConstants.*;
  * Expone endpoints de lectura de EstacionesDeServicio dentro de la API v1 pública.
  * No requiere autenticación JWT (está protegido por API Key a nivel global).
  * <p>
- * Ruta: /api/v1/public/EstacionesDeServicio
+ * Ruta: /api/v1/public/estaciones-de-servicio
  */
 @RestController
 @RequestMapping(API_ENDPOINT_ESTACIONES_DE_SERVICIO)
@@ -90,8 +90,8 @@ public class EstacionDeServicioRestController {
 	 *
 	 * <p>
 	 * Endpoint:
-	 * GET /api/v1/public/estaciones-servicio/{id}
-	 * GET /api/v1/public/estaciones-servicio/{id}?latitud={lat}&longitud={lon}
+	 * GET /api/v1/public/estaciones-de-servicio/{id}
+	 * GET /api/v1/public/estaciones-de-servicio/{id}?latitud={lat}&longitud={lon}
 	 * </p>
 	 *
 	 * <p>
@@ -132,7 +132,7 @@ public class EstacionDeServicioRestController {
 	 * los últimos X días.
 	 *
 	 * <p>
-	 * Endpoint: GET /api/v1/public/estaciones-servicio/{id}/precios-combustibles?dias=5
+	 * Endpoint: GET /api/v1/public/estaciones-de-servicio/{id}/precios-combustibles?dias=5
 	 * </p>
 	 *
 	 * @param id   ID de la estación de servicio
@@ -154,7 +154,7 @@ public class EstacionDeServicioRestController {
 	 * Obtiene los precios de los combustibles de la estacion con el ID indicado de la fecha indicada.
 	 *
 	 * <p>
-	 * Endpoint: GET /api/v1/public/estaciones-servicio/{id}/precios-combustibles/{fecha}
+	 * Endpoint: GET /api/v1/public/estaciones-de-servicio/{id}/precios-combustibles/{fecha}
 	 * </p>
 	 *
 	 * @param id    ID de la estación de servicio
