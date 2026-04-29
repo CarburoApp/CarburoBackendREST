@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Servicio para gestionar estaciones de servicio.
@@ -21,6 +23,7 @@ import java.util.List;
 public class EstacionDeServicioService {
 
 	private static final int MAX_DIAS = 30;
+	private static final int MAX_ESTACIONES_CERCANAS = 10;
 
 	private final EstacionDeServicioRepository estacionDeServicioRepository;
 	private final PrecioCombustibleRepository precioCombustibleRepository;
@@ -47,8 +50,8 @@ public class EstacionDeServicioService {
 
 	public List<EstacionDeServicioDto> getEstacionesDeServicioDto() {
 		List<EstacionDeServicioDto> estaciones = new ArrayList<>();
-		estacionDeServicioRepository.findAll()
-				.forEach(eess -> estaciones.add(EstacionDeServicioDto.from(eess)));
+		estacionDeServicioRepository.findAll().forEach(
+				eess -> estaciones.add(EstacionDeServicioDto.from(eess, List.of())));
 		return estaciones;
 	}
 
@@ -63,9 +66,10 @@ public class EstacionDeServicioService {
 		if (!estacionDeServicioRepository.existsById(id))
 			throw new ResourceNotFoundException(
 					"Estación de servicio no encontrada con id: " + id);
-		return EstacionDeServicioDto.from(
-				estacionDeServicioRepository.findEstacionDeServicioById(id));
+		return mapToDtoConPreciosHoy(
+				estacionDeServicioRepository.findEstacionDeServicioById(id), null);
 	}
+
 
 	public EstacionDeServicioDto getEstacionDeServicioDtoById(int id, double latitud,
 															  double longitud) {
@@ -76,7 +80,7 @@ public class EstacionDeServicioService {
 				id);
 		Long d = estacionDeServicioRepository.findDistanciaById(es.getId(), latitud,
 																longitud);
-		return EstacionDeServicioDto.from(es, d);
+		return mapToDtoConPreciosHoy(es, d);
 	}
 
 	public List<PrecioCombustibleDto> getPreciosDeCombustiblesDtoByEstacionDeServicioId(
@@ -128,8 +132,9 @@ public class EstacionDeServicioService {
 					"Comunidad autónoma no encontrada con id: " + id);
 
 
-		return estacionDeServicioRepository.findEstacionDeServicioByComunidadAutonoma(id)
-				.stream().map(EstacionDeServicioDto::from).toList();
+		return mapToDtoConPreciosHoy(
+				estacionDeServicioRepository.findEstacionDeServicioByComunidadAutonoma(
+						id));
 	}
 
 
@@ -140,8 +145,8 @@ public class EstacionDeServicioService {
 		if (!provinciaRepository.existsById(id))
 			throw new ResourceNotFoundException("Provincia no encontrada con id: " + id);
 
-		return estacionDeServicioRepository.findEstacionDeServicioByProvincia(id).stream()
-				.map(EstacionDeServicioDto::from).toList();
+		return mapToDtoConPreciosHoy(
+				estacionDeServicioRepository.findEstacionDeServicioByProvincia(id));
 	}
 
 
@@ -152,8 +157,8 @@ public class EstacionDeServicioService {
 		if (!municipioRepository.existsById(id))
 			throw new ResourceNotFoundException("Municipio no encontrado con id: " + id);
 
-		return estacionDeServicioRepository.findEstacionDeServicioByMunicipio(id).stream()
-				.map(EstacionDeServicioDto::from).toList();
+		return mapToDtoConPreciosHoy(
+				estacionDeServicioRepository.findEstacionDeServicioByMunicipio(id));
 	}
 
 	public List<EstacionDeServicioDto> getEstacionesDeServicioDtoCercanas(double lat,
@@ -166,7 +171,7 @@ public class EstacionDeServicioService {
 		if (lon < -180 || lon > 180) throw new IllegalArgumentException(
 				"Longitud fuera de rango válido (-180 a 180)");
 		if (limit <= 0) limit = 1;
-		if (limit > 10) limit = 10;
+		if (limit > MAX_ESTACIONES_CERCANAS) limit = MAX_ESTACIONES_CERCANAS;
 
 
 		return estacionDeServicioRepository.findEstacionDeServicioMasCercana(lat, lon,
@@ -174,7 +179,43 @@ public class EstacionDeServicioService {
 				.stream().map(eess -> {
 					Long distancia = estacionDeServicioRepository.findDistanciaById(
 							eess.getId(), lat, lon);
-					return EstacionDeServicioDto.from(eess, distancia);
+					List<PrecioCombustibleDto> precios = precioCombustibleRepository.findByEstacion_IdAndId_Fecha(
+									eess.getId(), LocalDate.now()).stream()
+							.map(PrecioCombustibleDto::from).toList();
+					return EstacionDeServicioDto.from(eess, distancia, precios);
 				}).toList();
+	}
+
+	private List<EstacionDeServicioDto> mapToDtoConPreciosHoy(
+			List<EstacionDeServicio> estaciones) {
+		if (estaciones.isEmpty()) return List.of();
+
+		List<Integer> idsEess;
+		List<PrecioCombustibleDto> precioCombustibleDtos;
+		Map<Integer, List<PrecioCombustibleDto>> preciosPorEstacion;
+
+		idsEess = estaciones.stream().map(EstacionDeServicio::getId).toList();
+
+		precioCombustibleDtos = precioCombustibleRepository.findPreciosHoyByListadoIdEstaciones(
+						idsEess, LocalDate.now()).stream().map(PrecioCombustibleDto::from)
+				.toList();
+		preciosPorEstacion    = precioCombustibleDtos.stream().collect(
+				Collectors.groupingBy(PrecioCombustibleDto::id_estacion_de_servicio));
+
+		return estaciones.stream().map(e -> EstacionDeServicioDto.from(e, null,
+																	   preciosPorEstacion.getOrDefault(
+																			   e.getId(),
+																			   List.of())))
+				.toList();
+	}
+
+	private EstacionDeServicioDto mapToDtoConPreciosHoy(EstacionDeServicio estacion,
+														Long distancia) {
+
+		List<PrecioCombustibleDto> precios = precioCombustibleRepository.findPreciosHoyByListadoIdEstaciones(
+						List.of(estacion.getId()), LocalDate.now()).stream()
+				.map(PrecioCombustibleDto::from).toList();
+
+		return EstacionDeServicioDto.from(estacion, distancia, precios);
 	}
 }

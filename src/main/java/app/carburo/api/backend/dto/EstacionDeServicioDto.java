@@ -42,7 +42,20 @@ public record EstacionDeServicioDto(
 	 * @return DTO con los datos mapeados
 	 */
 	public static EstacionDeServicioDto from(EstacionDeServicio e) {
-		return EstacionDeServicioDto.from(e, null);
+		return EstacionDeServicioDto.from(e, null, e.getPreciosCombustibles().stream()
+				.map(PrecioCombustibleDto::from).toList());
+	}
+
+	/**
+	 * Convierte una entidad EstacionDeServicio a DTO.
+	 *
+	 * @param e entidad origen
+	 * @param precios listado de precios que se desea introducir en el DTO.
+	 * @return DTO con los datos mapeados
+	 */
+	public static EstacionDeServicioDto from(EstacionDeServicio e,
+											 List<PrecioCombustibleDto> precios) {
+		return EstacionDeServicioDto.from(e, null, precios);
 	}
 
 	/**
@@ -50,10 +63,11 @@ public record EstacionDeServicioDto(
 	 *
 	 * @param e                entidad origen
 	 * @param distancia_metros distancia en metros
+	 * @param precios listado de precios que se desea introducir en el DTO.
 	 * @return DTO con los datos mapeados
 	 */
-	public static EstacionDeServicioDto from(EstacionDeServicio e,
-											 Long distancia_metros) {
+	public static EstacionDeServicioDto from(EstacionDeServicio e, Long distancia_metros,
+											 List<PrecioCombustibleDto> precios) {
 		return new EstacionDeServicioDto(
 				e.getId(),
 				e.getRotulo(),
@@ -80,8 +94,7 @@ public record EstacionDeServicioDto(
 				distancia_metros,
 				e.getCombustiblesDisponibles().stream().map(Combustible::getId).collect(
 						Collectors.toSet()),
-				e.getPreciosCombustibles().stream().map(PrecioCombustibleDto::from)
-						.toList()
+				precios
 		);
 	}
 
