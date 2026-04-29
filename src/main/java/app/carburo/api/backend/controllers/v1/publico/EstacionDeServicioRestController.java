@@ -39,7 +39,7 @@ public class EstacionDeServicioRestController {
 	 * Obtiene el listado completo de EstacionesDeServicio disponibles.
 	 *
 	 * <p>
-	 * Endpoint: GET /api/v1/public/EstacionesDeServicio
+	 * Endpoint: GET /api/v1/public/estaciones-de-servicio
 	 * </p>
 	 *
 	 * @return {@link ResponseEntity} con lista de {@link EstacionDeServicioDto}
@@ -49,6 +49,22 @@ public class EstacionDeServicioRestController {
 	public ResponseEntity<ApiResponse<List<EstacionDeServicioDto>>> doGetEstacionesDeServicio() {
 		List<EstacionDeServicioDto> estacionesDeServicio = estacionDeServicioService.getEstacionesDeServicioDto();
 		return ResponseEntity.ok(ApiResponse.success(estacionesDeServicio));
+	}
+
+	/**
+	 * Obtiene el número total de EstacionesDeServicio disponibles a nivel nacional.
+	 *
+	 * <p>
+	 * Endpoint: GET /api/v1/public/estaciones-de-servicio/count
+	 * </p>
+	 *
+	 * @return {@link ResponseEntity} con el conteo total de Estaciones de Servicio
+	 * y código HTTP 200 OK
+	 */
+	@GetMapping(API_ENDPOINT_ESTACIONES_DE_SERVICIO_TOTALES)
+	public ResponseEntity<ApiResponse<Long>> doGetTotalEstacionesDeServicio() {
+		return ResponseEntity.ok(ApiResponse.success(
+				estacionDeServicioService.getTotalEstacionesDeServicio()));
 	}
 
 	/**

@@ -51,6 +51,7 @@ public final class HttpConstants {
 			"/provincias/municipios";
 	public static final String API_ENDPOINT_ESTACIONES_DE_SERVICIO =
 			API_BASE_PATH_PUBLIC + API_PATH_ESTACIONES_DE_SERVICIO;
+	public static final String API_ENDPOINT_ESTACIONES_DE_SERVICIO_TOTALES = "/count";
 	public static final String API_ENDPOINT_ESTACIONES_DE_SERVICIO_MUNICIPIO = "/municipio";
 	public static final String API_ENDPOINT_ESTACIONES_DE_SERVICIO_PROVINCIA = "/provincia";
 	public static final String API_ENDPOINT_ESTACIONES_DE_SERVICIO_COMUNIDAD_AUTONOMA = "/comunidad-autonoma";

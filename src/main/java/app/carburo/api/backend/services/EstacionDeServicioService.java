@@ -52,6 +52,10 @@ public class EstacionDeServicioService {
 		return estaciones;
 	}
 
+	public long getTotalEstacionesDeServicio() {
+		return estacionDeServicioRepository.count();
+	}
+
 	/**
 	 * Devuelve una estación de servicio según su ID
 	 */
