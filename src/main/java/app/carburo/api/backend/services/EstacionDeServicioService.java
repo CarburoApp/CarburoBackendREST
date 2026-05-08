@@ -30,6 +30,7 @@ public class EstacionDeServicioService {
 	private final ComunidadAutonomaRepoository comunidadAutonomaRepository;
 	private final ProvinciaRepository provinciaRepository;
 	private final MunicipioRepository municipioRepository;
+	private final PrecioStateService precioStateService;
 
 	/**
 	 * Inyección de dependencias de los servicios.
@@ -40,12 +41,14 @@ public class EstacionDeServicioService {
 			PrecioCombustibleRepository precioCombustibleRepository,
 			ComunidadAutonomaRepoository comunidadAutonomaRepository,
 			ProvinciaRepository provinciaRepository,
-			MunicipioRepository municipioRepository) {
+			MunicipioRepository municipioRepository,
+			PrecioStateService precioStateService) {
 		this.estacionDeServicioRepository = estacionDeServicioRepository;
 		this.precioCombustibleRepository = precioCombustibleRepository;
 		this.comunidadAutonomaRepository  = comunidadAutonomaRepository;
 		this.provinciaRepository          = provinciaRepository;
 		this.municipioRepository          = municipioRepository;
+		this.precioStateService = precioStateService;
 	}
 
 	public List<EstacionDeServicioDto> getEstacionesDeServicioDto() {
@@ -180,7 +183,7 @@ public class EstacionDeServicioService {
 					Long distancia = estacionDeServicioRepository.findDistanciaById(
 							eess.getId(), lat, lon);
 					List<PrecioCombustibleDto> precios = precioCombustibleRepository.findByEstacion_IdAndId_Fecha(
-									eess.getId(), LocalDate.now()).stream()
+									eess.getId(), precioStateService.getBestDate()).stream()
 							.map(PrecioCombustibleDto::from).toList();
 					return EstacionDeServicioDto.from(eess, distancia, precios);
 				}).toList();
@@ -197,7 +200,7 @@ public class EstacionDeServicioService {
 		idsEess = estaciones.stream().map(EstacionDeServicio::getId).toList();
 
 		precioCombustibleDtos = precioCombustibleRepository.findPreciosHoyByListadoIdEstaciones(
-						idsEess, LocalDate.now()).stream().map(PrecioCombustibleDto::from)
+						idsEess, precioStateService.getBestDate()).stream().map(PrecioCombustibleDto::from)
 				.toList();
 		preciosPorEstacion    = precioCombustibleDtos.stream().collect(
 				Collectors.groupingBy(PrecioCombustibleDto::id_estacion_de_servicio));
@@ -213,7 +216,7 @@ public class EstacionDeServicioService {
 														Long distancia) {
 
 		List<PrecioCombustibleDto> precios = precioCombustibleRepository.findPreciosHoyByListadoIdEstaciones(
-						List.of(estacion.getId()), LocalDate.now()).stream()
+						List.of(estacion.getId()), precioStateService.getBestDate()).stream()
 				.map(PrecioCombustibleDto::from).toList();
 
 		return EstacionDeServicioDto.from(estacion, distancia, precios);

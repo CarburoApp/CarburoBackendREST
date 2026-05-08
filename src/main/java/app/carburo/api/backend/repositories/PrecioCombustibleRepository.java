@@ -30,4 +30,7 @@ public interface PrecioCombustibleRepository
 	)
 	List<PrecioCombustible> findPreciosHoyByListadoIdEstaciones(
 			@Param("ids") List<Integer> ids, @Param("fecha") LocalDate fecha);
+
+
+	boolean existsById_Fecha(LocalDate today);
 }
