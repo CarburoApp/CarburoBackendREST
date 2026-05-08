@@ -10,8 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_BASE_PATH_PUBLIC;
-import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_BASE_PATH_VERSION_V1;
+import static app.carburo.api.backend.controllers.utilities.HttpConstants.*;
 
 /**
  * Configuración de seguridad web de la aplicación.
@@ -58,6 +57,7 @@ public class WebSecurityConfig {
 
 				.authorizeHttpRequests(auth -> auth
 
+						.requestMatchers(API_BASE_PATH_STATUS + "/**").permitAll()
 						.requestMatchers(API_BASE_PATH_PUBLIC + "/**").permitAll()
 						.requestMatchers(API_BASE_PATH_VERSION_V1 + "/**").authenticated()
 

@@ -57,6 +57,20 @@ public class UsuarioRestController {
 	}
 
 	/**
+	 * Comprueba si el usuario existe, identificado por su UUID y su token de Supabase.
+	 *
+	 * @param uuid identificador único del usuario
+	 */
+	@RequestMapping(value = "/{uuid}", method = RequestMethod.HEAD)
+	public ResponseEntity<Void> doHeadExistsUsuario(@PathVariable UUID uuid) {
+		validateOwnership(uuid);
+
+		boolean exists = usuarioService.existsUsuario(uuid);
+		if (!exists) return ResponseEntity.notFound().build();
+		return ResponseEntity.ok().build();
+	}
+
+	/**
 	 * Obtiene la provincia favorita del usuario.
 	 *
 	 * @param uuid identificador único del usuario

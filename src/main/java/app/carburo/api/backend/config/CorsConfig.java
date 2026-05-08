@@ -46,7 +46,8 @@ public class CorsConfig {
 
 		// Métodos permitidos
 		List<HttpMethod> allowMethods = List.of(HttpMethod.GET, HttpMethod.POST,
-												HttpMethod.PATCH, HttpMethod.DELETE);
+												HttpMethod.PATCH, HttpMethod.DELETE,
+												HttpMethod.HEAD, HttpMethod.OPTIONS);
 		config.setAllowedMethods(allowMethods.stream().map(HttpMethod::name).toList());
 
 		// Headers permitidos (Authorization, Content-Type, etc.)

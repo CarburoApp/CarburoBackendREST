@@ -27,6 +27,7 @@ public final class HttpConstants {
 	public static final String API_BASE_PATH_VERSION_V1 = "/v1";
 	public static final String API_BASE_PATH_PUBLIC =
 			API_BASE_PATH_VERSION_V1 + "/public";
+	public static final String API_BASE_PATH_STATUS = "/public/status";
 
 	public static final String API_PATH_COMBUSTIBLES = "/combustibles";
 	public static final String API_PATH_COMUNIDADES_AUTONOMAS = "/comunidades-autonomas";

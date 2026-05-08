@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>app.carburo.api</groupId>
 	<artifactId>CarburoBackendREST</artifactId>
-	<version>0.5</version>
+	<version>0.7.2</version>
 	<name>CarburoBackendREST</name>
 	<description>Backend que dispone una API REST para el consumo por parte de la aplicación Carburo. TFG - Manuel García Baldó 2025-2026</description>
 
@@ -43,6 +43,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<!-- STATUS / HEALTH -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
 		<!-- PostgreSQL -->
@@ -139,6 +145,13 @@
 						</exclude>
 					</excludes>
 				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

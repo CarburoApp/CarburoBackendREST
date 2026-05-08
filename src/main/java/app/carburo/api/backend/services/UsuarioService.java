@@ -73,6 +73,16 @@ public class UsuarioService {
     }
 
     /**
+     * Establece si un usuario está ya registrado en la BD.
+     *
+     * @param uuid identificador único del usuario
+     * @return Boolean indicando con true si el usuario existe, false en caso contrario
+     */
+    public boolean existsUsuario(UUID uuid) {
+        return usuarioRepository.existsById(uuid);
+    }
+
+    /**
      * Obtiene la provincia favorita de un usuario.
      *
      * @param uuid identificador único del usuario

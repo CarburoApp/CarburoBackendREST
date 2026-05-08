@@ -55,7 +55,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
 		String path = request.getRequestURI();
 
-		if (path.startsWith(API_BASE_PATH + API_BASE_PATH_VERSION_V1)) {
+		if (path.startsWith(API_BASE_PATH)) {
 			String headerKey = request.getHeader(HEADER_API_KEY);
 			if (headerKey == null || !headerKey.equals(apiKey)) {
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
