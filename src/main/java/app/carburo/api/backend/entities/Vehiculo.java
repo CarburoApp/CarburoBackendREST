@@ -32,6 +32,12 @@ public class Vehiculo {
 	@Column(name = "odometro_actual", nullable = false, precision = 9, scale = 2)
 	private BigDecimal odometroActual;
 
+	@Column(name = "capacidad_deposito",
+			nullable = false,
+			precision = 5,
+			scale = 1)
+	private BigDecimal capacidadDeposito;
+
 	@Column(name = "fecha_registro")
 	private OffsetDateTime fechaRegistro;
 
@@ -42,10 +48,21 @@ public class Vehiculo {
 	private Set<Repostaje> repostajes = new HashSet<>();
 
 	@OneToMany(mappedBy = "vehiculo", fetch = FetchType.LAZY)
-	private Set<VehiculoCombustible> combustibles = new HashSet<>();
-
-	@OneToMany(mappedBy = "vehiculo", fetch = FetchType.LAZY)
 	private Set<VehiculoUsuario> usuarios = new HashSet<>();
+
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(
+			name = "vehiculo_combustible",
+			joinColumns = @JoinColumn(
+					name = "id_vehiculo",
+					referencedColumnName = "id"
+			),
+			inverseJoinColumns = @JoinColumn(
+					name = "id_combustible",
+					referencedColumnName = "id"
+			)
+	)
+	private Set<Combustible> combustibles = new HashSet<>();
 
 	@PrePersist
 	public void prePersist() {
