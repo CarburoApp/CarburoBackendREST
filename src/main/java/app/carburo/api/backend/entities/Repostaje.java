@@ -31,7 +31,7 @@ public class Repostaje {
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "id_eess", nullable = false)
-	private EstacionDeServicio estacion;
+	private EstacionDeServicio estacionDeServicio;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "uuid_usuario", referencedColumnName = "uuid", nullable = false)
@@ -64,13 +64,13 @@ public class Repostaje {
 	}
 
 	public Repostaje(Vehiculo vehiculo, Combustible combustible,
-					 EstacionDeServicio estacion, Usuario usuario, BigDecimal cantidad,
+					 EstacionDeServicio estacionDeServicio, Usuario usuario, BigDecimal cantidad,
 					 BigDecimal costeUnitario, BigDecimal odometroFinal,
 					 Boolean depositoLleno) {
 		this.vehiculo       = vehiculo;
-		this.combustible    = combustible;
-		this.estacion       = estacion;
-		this.usuario        = usuario;
+		this.combustible        = combustible;
+		this.estacionDeServicio = estacionDeServicio;
+		this.usuario            = usuario;
 		this.cantidad       = cantidad;
 		this.costeUnitario  = costeUnitario;
 		this.odometroFinal  = odometroFinal;

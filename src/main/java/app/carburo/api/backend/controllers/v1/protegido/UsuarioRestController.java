@@ -1,17 +1,14 @@
 package app.carburo.api.backend.controllers.v1.protegido;
 
-import app.carburo.api.backend.config.JwtUser;
 import app.carburo.api.backend.controllers.utilities.ApiResponse;
 import app.carburo.api.backend.dto.EstacionDeServicioDto;
 import app.carburo.api.backend.dto.UsuarioDto;
 import app.carburo.api.backend.exceptions.UnauthorizedException;
 import app.carburo.api.backend.services.UsuarioService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -30,7 +27,7 @@ import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_EN
  */
 @RestController
 @RequestMapping(API_ENDPOINT_USUARIOS)
-public class UsuarioRestController {
+public class UsuarioRestController extends BaseProtectedRestController {
 
 	private final UsuarioService usuarioService;
 
@@ -197,28 +194,5 @@ public class UsuarioRestController {
 		validateOwnership(uuid);
 		usuarioService.removeEstacionDeServicioFavorita(uuid, estacionId);
 		return ResponseEntity.ok(ApiResponse.success(null));
-	}
-
-	/**
-	 * Obtiene el usuario autenticado desde el contexto de seguridad.
-	 *
-	 * @return usuario autenticado en el contexto JWT
-	 */
-	private JwtUser getAuthUser() {
-		return (JwtUser) Objects.requireNonNull(
-				SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
-	}
-
-	/**
-	 * Valida que el UUID solicitado pertenece al usuario autenticado.
-	 *
-	 * @param requestUuid UUID del recurso solicitado
-	 * @throws UnauthorizedException si el UUID no coincide con el usuario autenticado
-	 */
-	private void validateOwnership(UUID requestUuid) {
-		JwtUser authUser = getAuthUser();
-		if (requestUuid == null || authUser == null || !requestUuid.equals(authUser.uuid())) {
-			throw new UnauthorizedException("UUID mismatch");
-		}
 	}
 }

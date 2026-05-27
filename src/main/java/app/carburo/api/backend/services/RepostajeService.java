@@ -6,7 +6,10 @@ import app.carburo.api.backend.entities.*;
 import app.carburo.api.backend.exceptions.InvalidUsuarioDataException;
 import app.carburo.api.backend.exceptions.ResourceNotFoundException;
 import app.carburo.api.backend.exceptions.UsuarioAlreadyExistsException;
-import app.carburo.api.backend.repositories.*;
+import app.carburo.api.backend.repositories.CombustibleRepository;
+import app.carburo.api.backend.repositories.EstacionDeServicioRepository;
+import app.carburo.api.backend.repositories.ProvinciaRepository;
+import app.carburo.api.backend.repositories.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Servicio encargado de la gestión de los vehículos de los usuarios dentro del sistema.
  *
- * <p>Este servicio encapsula toda la lógica de negocio relacionada con la entidad {@link Vehiculo},
+ * <p>Este servicio encapsula toda la lógica de negocio relacionada con la entidad {@link Repostaje},
  * incluyendo su creación, consulta y actualización de relaciones como provincia favorita,
  * combustibles favoritos y estaciones de servicio favoritas.</p>
  *
@@ -30,11 +33,11 @@ import java.util.stream.Collectors;
  * {@link UsuarioAlreadyExistsException} o {@link InvalidUsuarioDataException}.</p>
  */
 @Service
-public class VehiculoService {
+public class RepostajeService {
 
-    private final VehiculoRepository vehiculoRepository;
     private final UsuarioRepository usuarioRepository;
     private final EstacionDeServicioRepository estacionDeServicioRepository;
+    private final ProvinciaRepository provinciaRepository;
     private final CombustibleRepository combustibleRepository;
 
     /**
@@ -42,38 +45,39 @@ public class VehiculoService {
      *
      * @param usuarioRepository repositorio de usuarios
      * @param estacionDeServicioRepository repositorio de estaciones de servicio
+     * @param provinciaRepository repositorio de provincias
      * @param combustibleRepository repositorio de combustibles
      */
-    public VehiculoService(VehiculoRepository vehiculoRepository,
-                           UsuarioRepository usuarioRepository,
-                           EstacionDeServicioRepository estacionDeServicioRepository,
-                           CombustibleRepository combustibleRepository) {
-        this.vehiculoRepository = vehiculoRepository;
+    public RepostajeService(UsuarioRepository usuarioRepository,
+							EstacionDeServicioRepository estacionDeServicioRepository,
+							ProvinciaRepository provinciaRepository,
+							CombustibleRepository combustibleRepository) {
         this.usuarioRepository = usuarioRepository;
         this.estacionDeServicioRepository = estacionDeServicioRepository;
+        this.provinciaRepository = provinciaRepository;
         this.combustibleRepository = combustibleRepository;
     }
 
     /**
      * Obtiene un usuario completo y lo transforma a DTO.
      *
-     * @param id identificador único del usuario
+     * @param uuid identificador único del usuario
      * @return DTO del usuario
      * @throws ResourceNotFoundException si el usuario no existe
      */
-    public UsuarioDto getVehiculo(int id) {
-        //Usuario usuario = findUsuarioOrThrow(id);
-        return UsuarioDto.from(null);
+    public UsuarioDto getUsuario(UUID uuid) {
+        Usuario usuario = findUsuarioOrThrow(uuid);
+        return UsuarioDto.from(usuario);
     }
 
     /**
      * Establece si un usuario está ya registrado en la BD.
      *
-     * @param id identificador único del usuario
+     * @param uuid identificador único del usuario
      * @return Boolean indicando con true si el usuario existe, false en caso contrario
      */
-    public boolean existsVehiculo(int id) {
-        return vehiculoRepository.existsById(id);
+    public boolean existsUsuario(UUID uuid) {
+        return usuarioRepository.existsById(uuid);
     }
 
     /**
@@ -129,7 +133,7 @@ public class VehiculoService {
      * @throws ResourceNotFoundException si la provincia o combustibles no existen
      */
     @Transactional
-    public void createVehicle(UsuarioDto dto) {
+    public void createUsuario(UsuarioDto dto) {
 
         if (dto == null || dto.uuid() == null) {
             throw new InvalidUsuarioDataException("El UUID es obligatorio");
@@ -139,9 +143,43 @@ public class VehiculoService {
             throw new UsuarioAlreadyExistsException(dto.uuid());
         }
 
-        Vehiculo vehiculo = new Vehiculo(); // TODO
+        Provincia provincia = provinciaRepository.findById(dto.id_provincia_favorita())
+                .orElseThrow(() -> new ResourceNotFoundException("Provincia no encontrada"));
 
-        vehiculoRepository.save(vehiculo);
+        Usuario usuario = new Usuario(dto.uuid(), provincia);
+
+        if (dto.ids_combustibles_favoritos() == null) {
+            usuario.getCombustiblesFavoritos()
+                    .addAll(combustibleRepository.findAll());
+        } else {
+            usuario.getCombustiblesFavoritos()
+                    .addAll(dto.ids_combustibles_favoritos()
+                                    .stream()
+                                    .map(this::getCombustibleOrThrow)
+                                    .toList());
+        }
+
+        usuarioRepository.save(usuario);
+    }
+
+    /**
+     * Actualiza la provincia favorita del usuario.
+     *
+     * @param uuid identificador del usuario
+     * @param provinciaId identificador de la nueva provincia
+     * @throws ResourceNotFoundException si el usuario o provincia no existen
+     */
+    @Transactional
+    public void updateProvincia(UUID uuid, short provinciaId) {
+
+        Usuario usuario = findUsuarioOrThrow(uuid);
+
+        Provincia provincia = provinciaRepository.findById(provinciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Provincia no encontrada"));
+
+        usuario.setProvinciaFavorita(provincia);
+
+        usuarioRepository.save(usuario);
     }
 
     /**
@@ -196,7 +234,7 @@ public class VehiculoService {
      * @throws ResourceNotFoundException si el usuario o estación no existen
      */
     @Transactional
-    public void removeVehiculo(UUID uuid, int estacionId) {
+    public void removeEstacionDeServicioFavorita(UUID uuid, int estacionId) {
 
         Usuario usuario = findUsuarioOrThrow(uuid);
 
