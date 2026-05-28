@@ -16,12 +16,13 @@ public record RepostajeDto(
 		short id_combustible,
 		int id_estacion_de_servicio,
 		UUID uuid_usuario_creador,
-		OffsetDateTime fecha,
+		OffsetDateTime fecha_repostaje,
+		OffsetDateTime fecha_registro,
 		double cantidad,
 		double coste_unitario,
-		double odometro_inicial,
+		Double odometro_inicial,
 		double odometro_final,
-		boolean desposito_lleno,
+		boolean deposito_lleno,
 		String nota
 		) {
 
@@ -33,6 +34,7 @@ public record RepostajeDto(
 				repostaje.getEstacionDeServicio().getId(),
 				repostaje.getUsuario().getUuid(),
 				repostaje.getFechaRepostaje(),
+				repostaje.getFechaRegistro(),
 				repostaje.getCantidad().doubleValue(),
 				repostaje.getCosteUnitario().doubleValue(),
 				repostaje.getOdometroInicial().doubleValue(),

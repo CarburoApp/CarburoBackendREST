@@ -42,7 +42,7 @@ public class Vehiculo {
 			scale = 1)
 	private BigDecimal capacidadDeposito;
 
-	@Column(name = "matricula")
+	@Column(name = "notas")
 	private String notas;
 
 	@Column(name = "fecha_registro")
