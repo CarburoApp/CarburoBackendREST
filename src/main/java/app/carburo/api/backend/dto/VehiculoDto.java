@@ -1,10 +1,7 @@
 package app.carburo.api.backend.dto;
 
 import app.carburo.api.backend.entities.Combustible;
-import app.carburo.api.backend.entities.EstacionDeServicio;
-import app.carburo.api.backend.entities.Usuario;
 import app.carburo.api.backend.entities.Vehiculo;
-import app.carburo.api.backend.services.VehiculoService;
 
 import java.util.Set;
 import java.util.UUID;
