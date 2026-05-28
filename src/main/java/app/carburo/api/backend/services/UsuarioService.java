@@ -13,6 +13,7 @@ import app.carburo.api.backend.repositories.CombustibleRepository;
 import app.carburo.api.backend.repositories.EstacionDeServicioRepository;
 import app.carburo.api.backend.repositories.ProvinciaRepository;
 import app.carburo.api.backend.repositories.UsuarioRepository;
+import app.carburo.api.backend.services.queryServices.CombustibleQueryService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +42,7 @@ public class UsuarioService {
     private final EstacionDeServicioRepository estacionDeServicioRepository;
     private final ProvinciaRepository provinciaRepository;
     private final CombustibleRepository combustibleRepository;
+    private final CombustibleQueryService combustibleQueryService;
 
     /**
      * Constructor con inyección de dependencias.
@@ -48,16 +50,18 @@ public class UsuarioService {
      * @param usuarioRepository repositorio de usuarios
      * @param estacionDeServicioRepository repositorio de estaciones de servicio
      * @param provinciaRepository repositorio de provincias
-     * @param combustibleRepository repositorio de combustibles
+     * @param combustibleQueryService repositorio de combustibles
      */
     public UsuarioService(UsuarioRepository usuarioRepository,
                           EstacionDeServicioRepository estacionDeServicioRepository,
                           ProvinciaRepository provinciaRepository,
-                          CombustibleRepository combustibleRepository) {
-        this.usuarioRepository = usuarioRepository;
+                          CombustibleRepository combustibleRepository,
+                          CombustibleQueryService combustibleQueryService) {
+        this.usuarioRepository       = usuarioRepository;
         this.estacionDeServicioRepository = estacionDeServicioRepository;
-        this.provinciaRepository = provinciaRepository;
-        this.combustibleRepository = combustibleRepository;
+        this.provinciaRepository     = provinciaRepository;
+        this.combustibleRepository   = combustibleRepository;
+        this.combustibleQueryService = combustibleQueryService;
     }
 
     /**
@@ -152,7 +156,7 @@ public class UsuarioService {
 
         if (dto.ids_combustibles_favoritos() == null) {
             usuario.getCombustiblesFavoritos()
-                    .addAll(combustibleRepository.findAll());
+                    .addAll(combustibleQueryService.findAllCached());
         } else {
             usuario.getCombustiblesFavoritos()
                     .addAll(dto.ids_combustibles_favoritos()
@@ -196,8 +200,8 @@ public class UsuarioService {
 
         Usuario usuario = findUsuarioOrThrow(uuid);
 
-        Set<Combustible> nuevos = (ids == null)
-                ? new HashSet<>(combustibleRepository.findAll())
+        Set<Combustible> nuevos = (ids == null) ? new HashSet<>(
+                combustibleQueryService.findAllCached())
                 : ids.stream()
                 .map(this::getCombustibleOrThrow)
                 .collect(Collectors.toSet());

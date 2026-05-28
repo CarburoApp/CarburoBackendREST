@@ -3,6 +3,7 @@ package app.carburo.api.backend.services;
 import app.carburo.api.backend.dto.ComunidadAutonomaDto;
 import app.carburo.api.backend.entities.ComunidadAutonoma;
 import app.carburo.api.backend.repositories.ComunidadAutonomaRepoository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class ComunidadAutonomaService {
 		return ccaa;
 	}
 
+	@Cacheable(value = "ccaa")
 	public List<ComunidadAutonomaDto> getComunidadesAutonomasDto() {
 		List<ComunidadAutonomaDto> ccaa = new ArrayList<>();
 		comunidadAutonomaRepository.findAll()
