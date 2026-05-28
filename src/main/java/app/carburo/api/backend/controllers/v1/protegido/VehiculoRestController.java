@@ -5,7 +5,6 @@ import app.carburo.api.backend.dto.RepostajeDto;
 import app.carburo.api.backend.dto.VehiculoDto;
 import app.carburo.api.backend.exceptions.UnauthorizedException;
 import app.carburo.api.backend.services.RepostajeService;
-import app.carburo.api.backend.services.UsuarioService;
 import app.carburo.api.backend.services.VehiculoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -80,7 +79,7 @@ public class VehiculoRestController extends BaseProtectedRestController {
 			@PathVariable UUID uuid) {
 		validateOwnership(uuid);
 		return ResponseEntity.ok(ApiResponse.success(
-				null));//repostajeService.getRepostajesUsuario(uuid)));
+				repostajeService.getRepostajesUsuario(uuid)));
 	}
 
 	/**
@@ -142,6 +141,9 @@ public class VehiculoRestController extends BaseProtectedRestController {
 	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
 	 *     <li>El vehículo debe existir.</li>
 	 *     <li>El vehículo debe pertenecer al usuario indicado.</li>
+	 *
+	 * Se permite modificar únicamente:
+	 * matricula, marca, modelo, odometro_actual, capacidad_deposito,notas e ids_combustibles_utilizados
 	 *
 	 * @param uuid       UUID del usuario autenticado
 	 * @param idVehiculo ID del vehículo
@@ -205,7 +207,7 @@ public class VehiculoRestController extends BaseProtectedRestController {
 			@PathVariable UUID uuid, @PathVariable Integer idVehiculo) {
 		validateOwnership(uuid);
 		return ResponseEntity.ok(ApiResponse.success(
-				null));//repostajeService.getRepostajesVehiculo(uuid, idVehiculo)));
+				repostajeService.getRepostajesVehiculo(uuid, idVehiculo)));
 	}
 
 	/**
@@ -223,19 +225,19 @@ public class VehiculoRestController extends BaseProtectedRestController {
 	 * @param uuid       UUID del usuario autenticado
 	 * @param idVehiculo ID del vehículo
 	 * @param dto        datos del repostaje
-	 * @return confirmación de creación
+	 * @return confirmación de creación con el id del repostaje
 	 * @throws UnauthorizedException si el UUID no coincide con el token JWT
 	 */
 	@PostMapping("/{uuid}/{idVehiculo}/repostajes")
-	public ResponseEntity<ApiResponse<Void>> doPostRepostaje(@PathVariable UUID uuid,
+	public ResponseEntity<ApiResponse<Integer>> doPostRepostaje(@PathVariable UUID uuid,
 															 @PathVariable
 															 Integer idVehiculo,
 															 @RequestBody
 															 RepostajeDto dto) {
 
 		validateOwnership(uuid);
-		//repostajeService.createRepostaje(uuid, idVehiculo, dto);
-		return ResponseEntity.ok(ApiResponse.success(null));
+		int id = repostajeService.createRepostaje(uuid, idVehiculo, dto);
+		return ResponseEntity.ok(ApiResponse.success(id));
 	}
 
 	/**
@@ -267,7 +269,7 @@ public class VehiculoRestController extends BaseProtectedRestController {
 															  RepostajeDto dto) {
 
 		validateOwnership(uuid);
-		//repostajeService.updateRepostaje(uuid, idVehiculo, idRepostaje, dto);
+		repostajeService.updateRepostaje(uuid, idVehiculo, idRepostaje, dto);
 		return ResponseEntity.ok(ApiResponse.success(null));
 	}
 
@@ -297,7 +299,7 @@ public class VehiculoRestController extends BaseProtectedRestController {
 															   Integer idRepostaje) {
 
 		validateOwnership(uuid);
-		//repostajeService.deleteRepostaje(uuid, idVehiculo, idRepostaje);
+		repostajeService.deleteRepostaje(uuid, idVehiculo, idRepostaje);
 		return ResponseEntity.ok(ApiResponse.success(null));
 	}
 }

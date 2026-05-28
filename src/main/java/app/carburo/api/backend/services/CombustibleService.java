@@ -25,8 +25,6 @@ public class CombustibleService {
 	}
 
 	public List<Combustible> getCombustibles() {
-		List<Combustible> combustibles = new ArrayList<>();
-		combustibleRepository.findAll().forEach(combustibles::add);
-		return combustibles;
+		return new ArrayList<>(combustibleRepository.findAll());
 	}
 }

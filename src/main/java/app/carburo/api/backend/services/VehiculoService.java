@@ -13,6 +13,7 @@ import app.carburo.api.backend.repositories.VehiculoUsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -162,6 +163,8 @@ public class VehiculoService {
         vehiculo.setCombustibles(combustibles);
 
         vehiculo.setNotas(dto.notas());
+
+        vehiculo.setFechaModificacion(OffsetDateTime.now());
 
         vehiculoRepository.save(vehiculo);
     }
