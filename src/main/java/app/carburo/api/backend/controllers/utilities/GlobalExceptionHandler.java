@@ -100,4 +100,12 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(ApiResponse.error(ERR_BAD_REQUEST, ex.getMessage()));
 	}
+
+	@ExceptionHandler(InvalidRepostajeDataException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvalidRepostaje(
+			InvalidRepostajeDataException ex) {
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(ApiResponse.error(ERR_BAD_REQUEST, ex.getMessage()));
+	}
 }
