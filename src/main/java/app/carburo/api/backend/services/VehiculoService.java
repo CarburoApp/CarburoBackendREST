@@ -1,224 +1,248 @@
 package app.carburo.api.backend.services;
 
-import app.carburo.api.backend.dto.EstacionDeServicioDto;
-import app.carburo.api.backend.dto.UsuarioDto;
-import app.carburo.api.backend.entities.*;
-import app.carburo.api.backend.exceptions.InvalidUsuarioDataException;
-import app.carburo.api.backend.exceptions.ResourceNotFoundException;
-import app.carburo.api.backend.exceptions.UsuarioAlreadyExistsException;
-import app.carburo.api.backend.repositories.*;
+import app.carburo.api.backend.dto.VehiculoDto;
+import app.carburo.api.backend.entities.Combustible;
+import app.carburo.api.backend.entities.Usuario;
+import app.carburo.api.backend.entities.Vehiculo;
+import app.carburo.api.backend.entities.VehiculoUsuario;
+import app.carburo.api.backend.exceptions.*;
+import app.carburo.api.backend.repositories.CombustibleRepository;
+import app.carburo.api.backend.repositories.UsuarioRepository;
+import app.carburo.api.backend.repositories.VehiculoRepository;
+import app.carburo.api.backend.repositories.VehiculoUsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Servicio encargado de la gestión de los vehículos de los usuarios dentro del sistema.
+ * Servicio encargado de la gestión de vehículos dentro del sistema.
  *
- * <p>Este servicio encapsula toda la lógica de negocio relacionada con la entidad {@link Vehiculo},
- * incluyendo su creación, consulta y actualización de relaciones como provincia favorita,
- * combustibles favoritos y estaciones de servicio favoritas.</p>
+ * <p>
+ * Encapsula la lógica de negocio relacionada con la entidad {@link Vehiculo},
+ * incluyendo operaciones de creación, consulta, edición y eliminación.
+ * </p>
  *
- * <p>Se utiliza como capa intermedia entre los controladores REST y los repositorios JPA,
- * garantizando separación de responsabilidades y centralización de reglas de negocio.</p>
- *
- * <p>Las operaciones críticas lanzan excepciones de dominio como {@link ResourceNotFoundException},
- * {@link UsuarioAlreadyExistsException} o {@link InvalidUsuarioDataException}.</p>
+ * <p>
+ * También realiza validaciones de vinculación y propiedad entre usuarios
+ * y vehículos para operaciones protegidas.
+ * </p>
  */
 @Service
 public class VehiculoService {
 
     private final VehiculoRepository vehiculoRepository;
+    private final VehiculoUsuarioRepository vehiculoUsuarioRepository;
     private final UsuarioRepository usuarioRepository;
-    private final EstacionDeServicioRepository estacionDeServicioRepository;
     private final CombustibleRepository combustibleRepository;
 
     /**
      * Constructor con inyección de dependencias.
      *
      * @param usuarioRepository repositorio de usuarios
-     * @param estacionDeServicioRepository repositorio de estaciones de servicio
-     * @param combustibleRepository repositorio de combustibles
+     * @param vehiculoRepository repositorio de vehiculos
      */
     public VehiculoService(VehiculoRepository vehiculoRepository,
+                           VehiculoUsuarioRepository vehiculoUsuarioRepository,
                            UsuarioRepository usuarioRepository,
-                           EstacionDeServicioRepository estacionDeServicioRepository,
                            CombustibleRepository combustibleRepository) {
         this.vehiculoRepository = vehiculoRepository;
         this.usuarioRepository = usuarioRepository;
-        this.estacionDeServicioRepository = estacionDeServicioRepository;
-        this.combustibleRepository = combustibleRepository;
+        this.vehiculoUsuarioRepository = vehiculoUsuarioRepository;
+        this.combustibleRepository     = combustibleRepository;
     }
 
     /**
-     * Obtiene un usuario completo y lo transforma a DTO.
+     * Comprueba si un vehículo existe en el sistema.
      *
-     * @param id identificador único del usuario
-     * @return DTO del usuario
-     * @throws ResourceNotFoundException si el usuario no existe
-     */
-    public UsuarioDto getVehiculo(int id) {
-        //Usuario usuario = findUsuarioOrThrow(id);
-        return UsuarioDto.from(null);
-    }
-
-    /**
-     * Establece si un usuario está ya registrado en la BD.
-     *
-     * @param id identificador único del usuario
-     * @return Boolean indicando con true si el usuario existe, false en caso contrario
+     * @param id identificador del vehículo
+     * @return true si existe, false en caso contrario
      */
     public boolean existsVehiculo(int id) {
         return vehiculoRepository.existsById(id);
     }
 
     /**
-     * Obtiene la provincia favorita de un usuario.
+     * Obtiene un vehículo concreto vinculado a un usuario y lo devuelve en formato DTO..
+     * Comprobaciones realizadas:
+     * - El usuario debe existir.
+     * - El vehículo debe existir.
+     * - El vehículo debe estar vinculado al usuario.
      *
-     * @param uuid identificador único del usuario
-     * @return identificador de la provincia favorita
-     * @throws ResourceNotFoundException si el usuario no existe
+     * @param uuid {@link UUID} identificador único del usuario
+     * @param id   identificador único del vehículo
+     * @return {@link VehiculoDto} del vehículo solicitado
+     * @throws ResourceNotFoundException si el vehículo o usuario no existe
      */
-    public Short getProvinciaFavorita(UUID uuid) {
-        Usuario usuario = findUsuarioOrThrow(uuid);
-        return usuario.getProvinciaFavorita().getId();
+    public VehiculoDto getVehiculo(UUID uuid, int id) {
+        Vehiculo vehiculo = validateVehiculoExistsAndOwnership(uuid, id, false);
+        boolean propietario = isVehiculoOwner(uuid, id);
+
+        return VehiculoDto.from(vehiculo, uuid, propietario);
     }
 
     /**
-     * Obtiene los combustibles favoritos de un usuario.
+     * Obtiene todos los vehículos del usuario identificado por su id, y lo devuelve en formato DTO.
+     * Se debe de verificar que el usuario existe y que cada vehículo esté vinculado al usuario.
      *
-     * @param uuid identificador único del usuario
-     * @return conjunto de identificadores de combustibles favoritos
-     * @throws ResourceNotFoundException si el usuario no existe
+     * @param uuid {@link UUID} identificador único del usuario
+     * @return Listado de {@link VehiculoDto} del los vehículos vinculados al usuario
+     * @throws ResourceNotFoundException si el vehículo o usuario no existe
      */
-    public Set<Short> getCombustiblesFavoritos(UUID uuid) {
-        Usuario usuario = findUsuarioOrThrow(uuid);
+    public List<VehiculoDto> getVehiculoFromUsuario(UUID uuid) {
+        findUsuarioOrThrow(uuid);
 
-        return usuario.getCombustiblesFavoritos()
+        return vehiculoUsuarioRepository.findAllByUsuarioUuid(uuid)
                 .stream()
-                .map(Combustible::getId)
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * Obtiene las estaciones de servicio favoritas del usuario en formato DTO.
-     *
-     * @param uuid identificador único del usuario
-     * @return lista de estaciones de servicio favoritas
-     * @throws ResourceNotFoundException si el usuario no existe
-     */
-    public List<EstacionDeServicioDto> getEstacionesDeServicioFavoritasDto(UUID uuid) {
-        Usuario usuario = findUsuarioOrThrow(uuid);
-
-        return usuario.getEessFavoritas()
-                .stream()
-                .map(EstacionDeServicioDto::from)
+                .map(vu -> VehiculoDto.from(vu.getVehiculo(), uuid, vu.isPropietario()))
                 .toList();
     }
 
+
     /**
-     * Crea un nuevo usuario en el sistema.
+     *  Crea un nuevo vehículo y lo vincula al usuario como propietario.
      *
-     * @param dto datos del usuario a crear
+     * @param uuid UUID del usuario propietario
+     * @param dto datos del vehículo
+     * @return ID del vehículo creado
      * @throws InvalidUsuarioDataException si el DTO es inválido
      * @throws UsuarioAlreadyExistsException si el usuario ya existe
      * @throws ResourceNotFoundException si la provincia o combustibles no existen
      */
     @Transactional
-    public void createVehicle(UsuarioDto dto) {
+    public int createVehiculo(UUID uuid, VehiculoDto dto) {
 
-        if (dto == null || dto.uuid() == null) {
-            throw new InvalidUsuarioDataException("El UUID es obligatorio");
-        }
+        Usuario usuario = findUsuarioOrThrow(uuid);
 
-        if (usuarioRepository.existsById(dto.uuid())) {
-            throw new UsuarioAlreadyExistsException(dto.uuid());
-        }
+        validateVehiculoDto(dto);
 
-        Vehiculo vehiculo = new Vehiculo(); // TODO
+        Set<Combustible> combustibles = dto.ids_combustibles_utilizados().stream()
+                .map(this::getCombustiblesOrThrow).collect(Collectors.toSet());
+
+        Vehiculo vehiculo = new Vehiculo(dto.matricula(), dto.marca(), dto.modelo(),
+                                         dto.odometro_actual(), dto.capacidad_deposito(),
+                                         combustibles, dto.notas());
+
+        vehiculo = vehiculoRepository.save(vehiculo);
+
+        VehiculoUsuario relacion = new VehiculoUsuario(vehiculo, usuario, true);
+
+        vehiculoUsuarioRepository.save(relacion);
+
+        return vehiculo.getId();
+    }
+
+    /**
+     * Actualiza los datos de un vehículo existente.
+     *
+     * @param uuid UUID del usuario
+     * @param id   identificador del vehículo
+     * @param dto  nuevos datos
+     */
+    @Transactional
+    public void updateVehiculo(UUID uuid, int id, VehiculoDto dto) {
+
+        Vehiculo vehiculo = validateVehiculoExistsAndOwnership(uuid, id, true);
+
+        validateVehiculoDto(dto);
+
+        vehiculo.setMarca(dto.marca());
+        vehiculo.setModelo(dto.modelo());
+        vehiculo.setMatricula(dto.matricula());
+
+        vehiculo.setOdometroActual(dto.odometro_actual());
+        vehiculo.setCapacidadDeposito(dto.capacidad_deposito());
+
+        Set<Combustible> combustibles = combustibleRepository.findAllByIdIn(
+                dto.ids_combustibles_utilizados());
+
+        vehiculo.setCombustibles(combustibles);
+
+        vehiculo.setNotas(dto.notas());
 
         vehiculoRepository.save(vehiculo);
     }
 
+
     /**
-     * Reemplaza completamente los combustibles favoritos del usuario.
+     * Elimina un vehículo. Se realiza comprobación de que el usuario es propietario del
+     * vehículo antes de eliminarlo.
      *
+     * @param id identificador del vehículo
      * @param uuid identificador del usuario
-     * @param ids conjunto de identificadores de combustibles
-     * @throws ResourceNotFoundException si algún combustible no existe
+     * @throws ResourceNotFoundException si el usuario o el vehiculo no existen.
      */
     @Transactional
-    public void updateCombustiblesFavoritos(UUID uuid, Set<Short> ids) {
-
-        Usuario usuario = findUsuarioOrThrow(uuid);
-
-        Set<Combustible> nuevos = (ids == null)
-                ? new HashSet<>(combustibleRepository.findAll())
-                : ids.stream()
-                .map(this::getCombustibleOrThrow)
-                .collect(Collectors.toSet());
-
-        usuario.getCombustiblesFavoritos().clear();
-        usuario.getCombustiblesFavoritos().addAll(nuevos);
-
-        usuarioRepository.save(usuario);
+    public void deleteVehiculo(UUID uuid, int id) {
+        Vehiculo vehiculo = validateVehiculoExistsAndOwnership(uuid, id, true);
+        vehiculoRepository.delete(vehiculo);
     }
 
     /**
-     * Añade una estación de servicio a favoritos del usuario.
+     * Busca un vehiculo por su id o lanza excepción si no existe.
      *
-     * @param uuid identificador del usuario
-     * @param estacionId identificador de la estación
-     * @throws ResourceNotFoundException si el usuario o estación no existen
+     * @param id identificador del vehículo
+     * @return entidad {@link Vehiculo}
+     * @throws ResourceNotFoundException si el vehiculo no existe
      */
-    @Transactional
-    public void addEstacionDeServicioFavorita(UUID uuid, int estacionId) {
+    private Vehiculo findVehiculoOrThrow(int id) {
+        return vehiculoRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Vehiculo no encontrado"));
+    }
 
-        Usuario usuario = findUsuarioOrThrow(uuid);
 
-        EstacionDeServicio estacion = estacionDeServicioRepository.findById(estacionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Estación no encontrada"));
+    /**
+     * Valida que un usuario es propietario de un vehículo. Lanza excepción si el usuario
+     * o el vehículo no existen o en caso de que el usuario no sea propietario.
+     * En caso de que todo se cumpla, devuelve la entidad del vehículo para su uso posterior.
+     *
+     * @param uuid        UUID del usuario
+     * @param id          identificador del vehículo
+     * @param mustBeOwner true si debe exigirse propiedad
+     * @return entidad {@link Vehiculo}
+     */
+    private Vehiculo validateVehiculoExistsAndOwnership(UUID uuid, int id,
+                                                        boolean mustBeOwner) {
+        Vehiculo vehiculo = findVehiculoOrThrow(id);
 
-        usuario.getEessFavoritas().add(estacion);
+        VehiculoUsuario relacion = vehiculoUsuarioRepository.findByUsuarioUuidAndVehiculoId(
+                uuid, id).orElseThrow(() -> new UnauthorizedException(
+                "El usuario no está vinculado al vehículo"));
 
-        usuarioRepository.save(usuario);
+        if (mustBeOwner && !relacion.isPropietario()) {
+            throw new UnauthorizedException("El usuario no es propietario del vehículo");
+        }
+        return vehiculo;
     }
 
     /**
-     * Elimina una estación de servicio de favoritos del usuario.
+     * Comprueba si un usuario es propietario de un vehículo.
      *
-     * @param uuid identificador del usuario
-     * @param estacionId identificador de la estación
-     * @throws ResourceNotFoundException si el usuario o estación no existen
+     * @param uuid UUID del usuario
+     * @param id   identificador del vehículo
+     * @return true si es propietario
      */
-    @Transactional
-    public void removeVehiculo(UUID uuid, int estacionId) {
+    public boolean isVehiculoOwner(UUID uuid, int id) {
 
-        Usuario usuario = findUsuarioOrThrow(uuid);
-
-        EstacionDeServicio estacion = estacionDeServicioRepository.findById(estacionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Estación no encontrada"));
-
-        usuario.getEessFavoritas().remove(estacion);
-
-        usuarioRepository.save(usuario);
+        return vehiculoUsuarioRepository.findByUsuarioUuidAndVehiculoId(uuid, id)
+                .map(VehiculoUsuario::isPropietario).orElse(false);
     }
 
     /**
      * Busca un usuario por UUID o lanza excepción si no existe.
      *
      * @param uuid identificador del usuario
-     * @return entidad Usuario
+     * @return entidad {@link Usuario}
      * @throws ResourceNotFoundException si el usuario no existe
      */
     private Usuario findUsuarioOrThrow(UUID uuid) {
         return usuarioRepository.findById(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
+
 
     /**
      * Obtiene un combustible por ID o lanza excepción si no existe.
@@ -227,8 +251,52 @@ public class VehiculoService {
      * @return entidad Combustible
      * @throws ResourceNotFoundException si el combustible no existe
      */
-    private Combustible getCombustibleOrThrow(short id) {
+    private Combustible getCombustiblesOrThrow(short id) {
         return combustibleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Combustible no encontrado: " + id));
+    }
+
+    /**
+     * Valida los datos de un DTO de vehículo.
+     *
+     * @param dto DTO a validar
+     */
+    private void validateVehiculoDto(VehiculoDto dto) {
+        if (dto == null)
+            throw new InvalidVehiculoDataException("El vehículo no puede ser nulo");
+
+        if (dto.marca() == null || dto.marca().isBlank() || dto.marca().length() > 40)
+            throw new InvalidVehiculoDataException(
+                    "La marca es obligatorio y con longitud <= 40.");
+
+        if (dto.modelo() == null || dto.modelo().isBlank() || dto.modelo().length() > 40)
+            throw new InvalidVehiculoDataException(
+                    "El modelo es obligatorio y con longitud <= 40.");
+
+        if (dto.matricula() == null || dto.matricula().isBlank() ||
+                dto.matricula().length() > 20) throw new InvalidVehiculoDataException(
+                "La matricula es obligatoria y con longitud <= 20.");
+
+        if (dto.odometro_actual() < 0) {
+            throw new InvalidVehiculoDataException(
+                    "El odómetro actual no puede ser menor al inicial");
+        }
+
+        if (dto.capacidad_deposito() < 0) {
+            throw new InvalidVehiculoDataException(
+                    "La capacidad del depósito debe ser mayor que 0");
+        }
+
+        if (dto.ids_combustibles_utilizados() == null ||
+                dto.ids_combustibles_utilizados().isEmpty()) {
+            throw new InvalidVehiculoDataException(
+                    "Los combustibles utilizados no pueden ser nulo o vacío.");
+        }
+
+        if (!combustibleRepository.existsAllByIdIn(dto.ids_combustibles_utilizados())) {
+            throw new InvalidVehiculoDataException(
+                    "Algunos combustibles indicados como utilizados no son válidos: " +
+                            dto.ids_combustibles_utilizados());
+        }
     }
 }

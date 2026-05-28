@@ -5,11 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
-
 @Entity
 @Table(name = "vehiculo_usuario")
 @Getter
@@ -36,9 +31,11 @@ public class VehiculoUsuario {
 	public VehiculoUsuario(Vehiculo vehiculo,
 						   Usuario usuario,
 						   Boolean propietario) {
-		this.vehiculo = vehiculo;
-		this.usuario = usuario;
-		this.propietario = propietario;
-		this.id = new VehiculoUsuarioId(vehiculo.getId(), usuario.getUuid());
+		setVehiculo(vehiculo);
+		setUsuario(usuario);
+		setPropietario(propietario);
+		setId(new VehiculoUsuarioId(vehiculo.getId(), usuario.getUuid()));
 	}
+
+	public Boolean isPropietario() {return propietario;}
 }

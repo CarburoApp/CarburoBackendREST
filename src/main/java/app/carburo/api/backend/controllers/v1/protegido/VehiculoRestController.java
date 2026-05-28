@@ -1,6 +1,5 @@
 package app.carburo.api.backend.controllers.v1.protegido;
 
-import app.carburo.api.backend.config.JwtUser;
 import app.carburo.api.backend.controllers.utilities.ApiResponse;
 import app.carburo.api.backend.dto.RepostajeDto;
 import app.carburo.api.backend.dto.VehiculoDto;
@@ -28,7 +27,6 @@ import static app.carburo.api.backend.controllers.utilities.HttpConstants.API_EN
 @RequestMapping(API_ENDPOINT_VEHICULOS)
 public class VehiculoRestController extends BaseProtectedRestController {
 
-	private final UsuarioService usuarioService;
 	private final VehiculoService vehiculoService;
 	private final RepostajeService repostajeService;
 
@@ -36,30 +34,21 @@ public class VehiculoRestController extends BaseProtectedRestController {
 	/**
 	 * Inyección de dependencias del servicio de vehiculos.
 	 */
-	public VehiculoRestController(UsuarioService usuarioService,
-								  VehiculoService vehiculoService,
+	public VehiculoRestController(VehiculoService vehiculoService,
 								  RepostajeService repostajeService) {
-		this.usuarioService   = usuarioService;
 		this.vehiculoService  = vehiculoService;
 		this.repostajeService = repostajeService;
 	}
 
 	/**
 	 * Obtiene todos los vehículos del usuario autenticado.
+	 * Comprobaciones realizadas:
+	 * <li>El UUID debe coincidir con el UUID del token JWT.</li>
+	 * <li>El usuario debe existir.</li>
 	 *
+	 * No incluye repostajes asociados.
 	 * <p>
 	 * Endpoint: GET /api/v1/vehiculos/{uuid}
-	 * </p>
-	 *
-	 * <p>
-	 * Comprobaciones realizadas:
-	 * </p>
-	 * <ul>
-	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
-	 *     <li>El usuario debe existir.</li>
-	 * </ul>
-	 * <p>
-	 * No incluye repostajes asociados.
 	 *
 	 * @param uuid UUID del usuario autenticado
 	 * @return listado de vehículos del usuario
@@ -70,23 +59,17 @@ public class VehiculoRestController extends BaseProtectedRestController {
 			@PathVariable UUID uuid) {
 		validateOwnership(uuid);
 		return ResponseEntity.ok(
-				ApiResponse.success(null)); //vehiculoService.getVehiculosUsuario(uuid)));
+				ApiResponse.success(vehiculoService.getVehiculoFromUsuario(uuid)));
 	}
 
 	/**
 	 * Obtiene todos los repostajes recientes del usuario autenticado.
-	 *
 	 * <p>
 	 * Endpoint: GET /api/v1/vehiculos/{uuid}/repostajes
-	 * </p>
-	 *
 	 * <p>
 	 * Comprobaciones realizadas:
-	 * </p>
-	 * <ul>
 	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
 	 *     <li>El usuario debe existir.</li>
-	 * </ul>
 	 *
 	 * @param uuid UUID del usuario autenticado
 	 * @return listado de repostajes del usuario
@@ -102,19 +85,13 @@ public class VehiculoRestController extends BaseProtectedRestController {
 
 	/**
 	 * Obtiene un vehículo concreto junto con todos sus repostajes.
-	 *
 	 * <p>
 	 * Endpoint: GET /api/v1/vehiculos/{uuid}/{idVehiculo}
-	 * </p>
-	 *
 	 * <p>
 	 * Comprobaciones realizadas:
-	 * </p>
-	 * <ul>
 	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
 	 *     <li>El vehículo debe existir.</li>
 	 *     <li>El vehículo debe pertenecer al usuario indicado.</li>
-	 * </ul>
 	 *
 	 * @param uuid       UUID del usuario autenticado
 	 * @param idVehiculo ID del vehículo
@@ -127,26 +104,19 @@ public class VehiculoRestController extends BaseProtectedRestController {
 																  Integer idVehiculo) {
 
 		validateOwnership(uuid);
-		validateVehiculoOwnership(uuid, idVehiculo);
 		return ResponseEntity.ok(ApiResponse.success(
-				null));//vehiculoService.getVehiculo(uuid, idVehiculo)));
+				vehiculoService.getVehiculo(uuid, idVehiculo)));
 	}
 
 	/**
 	 * Crea un nuevo vehículo asociado al usuario autenticado.
-	 *
 	 * <p>
 	 * Endpoint: POST /api/v1/vehiculos/{uuid}
-	 * </p>
-	 *
 	 * <p>
 	 * Comprobaciones realizadas:
-	 * </p>
-	 * <ul>
 	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
 	 *     <li>El usuario debe existir.</li>
 	 *     <li>Los datos del vehículo deben ser válidos.</li>
-	 * </ul>
 	 *
 	 * @param uuid UUID del usuario autenticado
 	 * @param dto  datos del nuevo vehículo
@@ -154,30 +124,24 @@ public class VehiculoRestController extends BaseProtectedRestController {
 	 * @throws UnauthorizedException si el UUID no coincide con el token JWT
 	 */
 	@PostMapping("/{uuid}")
-	public ResponseEntity<ApiResponse<String>> doPostVehiculo(@PathVariable UUID uuid,
+	public ResponseEntity<ApiResponse<Integer>> doPostVehiculo(@PathVariable UUID uuid,
 															  @RequestBody
 															  VehiculoDto dto) {
 
 		validateOwnership(uuid);
-		//vehiculoService.createVehiculo(uuid, dto);
-		return ResponseEntity.ok(ApiResponse.success(null));
+		int id = vehiculoService.createVehiculo(uuid, dto);
+		return ResponseEntity.ok(ApiResponse.success(id));
 	}
 
 	/**
 	 * Actualiza los datos de un vehículo existente.
-	 *
 	 * <p>
 	 * Endpoint: PATCH /api/v1/vehiculos/{uuid}/{idVehiculo}
-	 * </p>
-	 *
 	 * <p>
 	 * Comprobaciones realizadas:
-	 * </p>
-	 * <ul>
 	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
 	 *     <li>El vehículo debe existir.</li>
 	 *     <li>El vehículo debe pertenecer al usuario indicado.</li>
-	 * </ul>
 	 *
 	 * @param uuid       UUID del usuario autenticado
 	 * @param idVehiculo ID del vehículo
@@ -193,26 +157,19 @@ public class VehiculoRestController extends BaseProtectedRestController {
 															 VehiculoDto dto) {
 
 		validateOwnership(uuid);
-		validateVehiculoOwnership(uuid, idVehiculo);
-		//vehiculoService.updateVehiculo(uuid, idVehiculo, dto);
+		vehiculoService.updateVehiculo(uuid, idVehiculo, dto);
 		return ResponseEntity.ok(ApiResponse.success(null));
 	}
 
 	/**
 	 * Elimina un vehículo y todos sus repostajes asociados.
-	 *
 	 * <p>
 	 * Endpoint: DELETE /api/v1/vehiculos/{uuid}/{idVehiculo}
-	 * </p>
-	 *
 	 * <p>
 	 * Comprobaciones realizadas:
-	 * </p>
-	 * <ul>
 	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
 	 *     <li>El vehículo debe existir.</li>
 	 *     <li>El vehículo debe pertenecer al usuario indicado.</li>
-	 * </ul>
 	 *
 	 * @param uuid       UUID del usuario autenticado
 	 * @param idVehiculo ID del vehículo
@@ -224,26 +181,19 @@ public class VehiculoRestController extends BaseProtectedRestController {
 															  @PathVariable
 															  Integer idVehiculo) {
 		validateOwnership(uuid);
-		validateVehiculoOwnership(uuid, idVehiculo);
-		vehiculoService.removeVehiculo(uuid, idVehiculo);
+		vehiculoService.deleteVehiculo(uuid, idVehiculo);
 		return ResponseEntity.ok(ApiResponse.success(null));
 	}
 
 	/**
 	 * Obtiene todos los repostajes de un vehículo concreto.
-	 *
 	 * <p>
 	 * Endpoint: GET /api/v1/vehiculos/{uuid}/{idVehiculo}/repostajes
-	 * </p>
-	 *
 	 * <p>
 	 * Comprobaciones realizadas:
-	 * </p>
-	 * <ul>
 	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
 	 *     <li>El vehículo debe existir.</li>
 	 *     <li>El vehículo debe pertenecer al usuario indicado.</li>
-	 * </ul>
 	 *
 	 * @param uuid       UUID del usuario autenticado
 	 * @param idVehiculo ID del vehículo
@@ -254,28 +204,21 @@ public class VehiculoRestController extends BaseProtectedRestController {
 	public ResponseEntity<ApiResponse<List<RepostajeDto>>> doGetRepostajesVehiculo(
 			@PathVariable UUID uuid, @PathVariable Integer idVehiculo) {
 		validateOwnership(uuid);
-		validateVehiculoOwnership(uuid, idVehiculo);
 		return ResponseEntity.ok(ApiResponse.success(
 				null));//repostajeService.getRepostajesVehiculo(uuid, idVehiculo)));
 	}
 
 	/**
 	 * Añade un nuevo repostaje a un vehículo.
-	 *
 	 * <p>
 	 * Endpoint: POST /api/v1/vehiculos/{uuid}/{idVehiculo}/repostajes
-	 * </p>
-	 *
 	 * <p>
 	 * Comprobaciones realizadas:
-	 * </p>
-	 * <ul>
 	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
 	 *     <li>El vehículo debe existir.</li>
 	 *     <li>El vehículo debe pertenecer al usuario indicado.</li>
 	 *     <li>La estación de servicio debe existir.</li>
 	 *     <li>El combustible debe existir.</li>
-	 * </ul>
 	 *
 	 * @param uuid       UUID del usuario autenticado
 	 * @param idVehiculo ID del vehículo
@@ -291,29 +234,21 @@ public class VehiculoRestController extends BaseProtectedRestController {
 															 RepostajeDto dto) {
 
 		validateOwnership(uuid);
-
-		validateVehiculoOwnership(uuid, idVehiculo);
 		//repostajeService.createRepostaje(uuid, idVehiculo, dto);
 		return ResponseEntity.ok(ApiResponse.success(null));
 	}
 
 	/**
 	 * Actualiza un repostaje existente.
-	 *
 	 * <p>
 	 * Endpoint: PATCH /api/v1/vehiculos/{uuid}/{idVehiculo}/repostajes/{idRepostaje}
-	 * </p>
-	 *
 	 * <p>
 	 * Comprobaciones realizadas:
-	 * </p>
-	 * <ul>
 	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
 	 *     <li>El vehículo debe existir.</li>
 	 *     <li>El repostaje debe existir.</li>
 	 *     <li>El repostaje debe pertenecer al vehículo indicado.</li>
 	 *     <li>El vehículo debe pertenecer al usuario indicado.</li>
-	 * </ul>
 	 *
 	 * @param uuid        UUID del usuario autenticado
 	 * @param idVehiculo  ID del vehículo
@@ -332,28 +267,21 @@ public class VehiculoRestController extends BaseProtectedRestController {
 															  RepostajeDto dto) {
 
 		validateOwnership(uuid);
-		validateVehiculoOwnership(uuid, idVehiculo);
 		//repostajeService.updateRepostaje(uuid, idVehiculo, idRepostaje, dto);
 		return ResponseEntity.ok(ApiResponse.success(null));
 	}
 
 	/**
 	 * Elimina un repostaje existente.
-	 *
 	 * <p>
 	 * Endpoint: DELETE /api/v1/vehiculos/{uuid}/{idVehiculo}/repostajes/{idRepostaje}
-	 * </p>
-	 *
 	 * <p>
 	 * Comprobaciones realizadas:
-	 * </p>
-	 * <ul>
 	 *     <li>El UUID debe coincidir con el UUID del token JWT.</li>
 	 *     <li>El vehículo debe existir.</li>
 	 *     <li>El repostaje debe existir.</li>
 	 *     <li>El repostaje debe pertenecer al vehículo indicado.</li>
 	 *     <li>El vehículo debe pertenecer al usuario indicado.</li>
-	 * </ul>
 	 *
 	 * @param uuid        UUID del usuario autenticado
 	 * @param idVehiculo  ID del vehículo
@@ -369,24 +297,7 @@ public class VehiculoRestController extends BaseProtectedRestController {
 															   Integer idRepostaje) {
 
 		validateOwnership(uuid);
-		validateVehiculoOwnership(uuid, idVehiculo);
 		//repostajeService.deleteRepostaje(uuid, idVehiculo, idRepostaje);
 		return ResponseEntity.ok(ApiResponse.success(null));
-	}
-
-	/**
-	 * Válida si el id del vehículo en cuestión corresponde en propiedad con el usuario asociado al UUID.
-	 *
-	 * @param requestUuid UUID del usuario solicitante del recurso
-	 * @param idVehiculo  id del vehículo del recurso solicitado
-	 * @throws UnauthorizedException si el UUID no coincide con el usuario autenticado
-	 */
-	protected void validateVehiculoOwnership(UUID requestUuid, int idVehiculo) {
-		JwtUser authUser = getAuthUser();
-		if (requestUuid == null || authUser == null ||
-				!requestUuid.equals(authUser.uuid())) {
-			throw new UnauthorizedException("UUID mismatch");
-		}
-		// TODO
 	}
 }

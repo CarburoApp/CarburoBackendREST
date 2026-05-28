@@ -15,24 +15,28 @@ import java.util.stream.Collectors;
  */
 public record VehiculoDto(
 		int id,
-		String denominacion,
-		UUID uuid_usuario_requerido,
-		boolean es_usuario_propietario,
-		double odometro_inicial,
+		UUID uuid_usuario_solicitante,
+		boolean is_usuario_solicitante_propietario,
+		String matricula,
+		String marca,
+		String modelo,
 		double odometro_actual,
 		double capacidad_deposito,
+		String notas,
 		Set<Short> ids_combustibles_utilizados
 ) {
 
 	public static VehiculoDto from(Vehiculo vehiculo, UUID uuidUsuarioActual, boolean isPropietario) {
 		return new VehiculoDto(
 				vehiculo.getId(),
-				vehiculo.getDenominacion(),
 				uuidUsuarioActual,
 				isPropietario,
-				vehiculo.getOdometroInicial().doubleValue(),
+				vehiculo.getMatricula(),
+				vehiculo.getMarca(),
+				vehiculo.getModelo(),
 				vehiculo.getOdometroActual().doubleValue(),
 				vehiculo.getCapacidadDeposito().doubleValue(),
+				vehiculo.getNotas(),
 				vehiculo.getCombustibles()
 						.stream().map(Combustible::getId)
 						.collect(Collectors.toSet())
