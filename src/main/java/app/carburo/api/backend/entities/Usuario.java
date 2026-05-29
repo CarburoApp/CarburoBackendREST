@@ -31,7 +31,7 @@ public class Usuario {
     // FK a provincia, unidireccional
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name = "provincia_favorita", // TODO cambiar a id_provincia_favorita cuando se modifique la BD
+            name = "id_provincia_favorita",
             referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "usuario_provincia_favorita_fkey"),
             nullable = false

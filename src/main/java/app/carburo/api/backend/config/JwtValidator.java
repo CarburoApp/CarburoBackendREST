@@ -61,7 +61,8 @@ public class JwtValidator {
 		try {
 			// Inicializa el proveedor JWKS con cache y rate limiting
 			if (provider == null) {
-				provider = new JwkProviderBuilder(jwksUrl)
+				// Tras una corrección de URL se introduce el dominio, y se encarga de construir el jwks.
+				provider = new JwkProviderBuilder(issuer)
 						.cached(10, 24, TimeUnit.HOURS)
 						.rateLimited(10, 1, TimeUnit.MINUTES)
 						.build();
