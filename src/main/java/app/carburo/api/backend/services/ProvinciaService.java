@@ -4,6 +4,7 @@ import app.carburo.api.backend.dto.ProvinciaDto;
 import app.carburo.api.backend.entities.ComunidadAutonoma;
 import app.carburo.api.backend.entities.Provincia;
 import app.carburo.api.backend.repositories.ProvinciaRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class ProvinciaService {
 		this.provinciaRepository = provinciaRepository;
 	}
 
+	@Cacheable(value = "provincias")
 	public List<ProvinciaDto> getProvinciasDTO() {
 		List<ProvinciaDto> provincias = new ArrayList<>();
 		provinciaRepository.findAll()

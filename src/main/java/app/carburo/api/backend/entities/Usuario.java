@@ -11,11 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "usuario",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "usuario_email_key", columnNames = "email"),
-                @UniqueConstraint(name = "usuario_uuid_unique", columnNames = "uuid")
-        })
+@Table(name = "usuario")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,7 +19,7 @@ public class Usuario {
 
     // PK
     @Id
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, unique = true)
     private UUID uuid;
 
     @Column(name = "fecha_registro", nullable = false)
@@ -35,18 +31,24 @@ public class Usuario {
     // FK a provincia, unidireccional
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name = "provincia_favorita",
+            name = "provincia_favorita", // TODO cambiar a id_provincia_favorita cuando se modifique la BD
             referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "usuario_provincia_favorita_fkey"),
             nullable = false
     )
     private Provincia provinciaFavorita;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "combustible_favorito",
-            joinColumns = @JoinColumn(name = "uuid_usuario"),
-            inverseJoinColumns = @JoinColumn(name = "id_combustible")
+            joinColumns = @JoinColumn(
+                    name = "uuid_usuario",
+                    referencedColumnName = "uuid"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "id_combustible",
+                    referencedColumnName = "id"
+            )
     )
     private Set<Combustible> combustiblesFavoritos = new HashSet<>();
 
@@ -64,6 +66,26 @@ public class Usuario {
     )
     private Set<EstacionDeServicio> eessFavoritas = new HashSet<>();
 
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private Set<VehiculoUsuario> vehiculos = new HashSet<>();
+
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private Set<Repostaje> repostajes = new HashSet<>();
+
+    @PrePersist
+    public void prePersist() {
+        if (fechaRegistro == null) {
+            fechaRegistro = OffsetDateTime.now();
+        }
+        if (fechaActualizacion == null) {
+            fechaActualizacion = OffsetDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        fechaActualizacion = OffsetDateTime.now();
+    }
 
     public Usuario(UUID uuid,
                    OffsetDateTime fechaRegistro,

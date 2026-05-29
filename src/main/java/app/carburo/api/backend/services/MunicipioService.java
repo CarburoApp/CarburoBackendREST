@@ -4,6 +4,7 @@ import app.carburo.api.backend.dto.MunicipioDto;
 import app.carburo.api.backend.exceptions.ResourceNotFoundException;
 import app.carburo.api.backend.repositories.MunicipioRepository;
 import app.carburo.api.backend.repositories.ProvinciaRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class MunicipioService {
 		this.provinciaRepository = provinciaRepository;
 	}
 
+	@Cacheable(value = "municipios")
 	public List<MunicipioDto> getMunicipiosDTO() {
 		List<MunicipioDto> municipios = new ArrayList<>();
 		municipioRepository.findAll()
@@ -37,6 +39,7 @@ public class MunicipioService {
 				.map(MunicipioDto::from).toList();
 	}
 
+	@Cacheable(value = "municipiosConEESS", key = "#idProvincia")
 	public List<MunicipioDto> getMunicipiosDTOByProvinciaConEESS(short idProvincia) {
 		if (!provinciaRepository.existsById(idProvincia))
 			throw new ResourceNotFoundException(

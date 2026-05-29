@@ -1,9 +1,6 @@
 package app.carburo.api.backend.controllers.utilities;
 
-import app.carburo.api.backend.exceptions.InvalidUsuarioDataException;
-import app.carburo.api.backend.exceptions.ResourceNotFoundException;
-import app.carburo.api.backend.exceptions.UnauthorizedException;
-import app.carburo.api.backend.exceptions.UsuarioAlreadyExistsException;
+import app.carburo.api.backend.exceptions.*;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
@@ -91,6 +88,22 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(InvalidUsuarioDataException.class)
 	public ResponseEntity<ApiResponse<Void>> handleInvalidUsuario(
 			InvalidUsuarioDataException ex) {
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(ApiResponse.error(ERR_BAD_REQUEST, ex.getMessage()));
+	}
+
+	@ExceptionHandler(InvalidVehiculoDataException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvalidVehicle(
+			InvalidVehiculoDataException ex) {
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(ApiResponse.error(ERR_BAD_REQUEST, ex.getMessage()));
+	}
+
+	@ExceptionHandler(InvalidRepostajeDataException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvalidRepostaje(
+			InvalidRepostajeDataException ex) {
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(ApiResponse.error(ERR_BAD_REQUEST, ex.getMessage()));

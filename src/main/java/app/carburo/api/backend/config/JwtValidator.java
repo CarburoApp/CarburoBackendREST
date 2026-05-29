@@ -9,7 +9,6 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 
-import java.net.URL;
 import java.security.interfaces.ECPublicKey;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +61,7 @@ public class JwtValidator {
 		try {
 			// Inicializa el proveedor JWKS con cache y rate limiting
 			if (provider == null) {
-				provider = new JwkProviderBuilder(new URL(jwksUrl))
+				provider = new JwkProviderBuilder(jwksUrl)
 						.cached(10, 24, TimeUnit.HOURS)
 						.rateLimited(10, 1, TimeUnit.MINUTES)
 						.build();

@@ -1,32 +1,26 @@
 package app.carburo.api.backend.services;
 
 import app.carburo.api.backend.dto.CombustibleDto;
-import app.carburo.api.backend.entities.Combustible;
-import app.carburo.api.backend.repositories.CombustibleRepository;
+import app.carburo.api.backend.services.queryServices.CombustibleQueryService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CombustibleService {
 
-	private final CombustibleRepository combustibleRepository;
+	private final CombustibleQueryService combustibleQueryService;
 
-	public CombustibleService(CombustibleRepository combustibleRepository) {
-		this.combustibleRepository = combustibleRepository;
+	public CombustibleService(CombustibleQueryService combustibleQueryService) {
+		this.combustibleQueryService = combustibleQueryService;
 	}
 
+	@Cacheable(value = "combustibles")
 	public List<CombustibleDto> getCombustiblesDto() {
-		List<CombustibleDto> combustibles = new ArrayList<>();
-		combustibleRepository.findAll().forEach(
-				combustible -> combustibles.add(CombustibleDto.from(combustible)));
-		return combustibles;
-	}
-
-	public List<Combustible> getCombustibles() {
-		List<Combustible> combustibles = new ArrayList<>();
-		combustibleRepository.findAll().forEach(combustibles::add);
-		return combustibles;
+		return combustibleQueryService.findAllCached()
+				.stream()
+				.map(CombustibleDto::from)
+				.toList();
 	}
 }

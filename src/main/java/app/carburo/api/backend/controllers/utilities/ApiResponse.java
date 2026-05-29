@@ -1,5 +1,7 @@
 package app.carburo.api.backend.controllers.utilities;
 
+import java.time.Instant;
+
 public record ApiResponse<T>(
 		boolean success,
 		T data,
@@ -15,6 +17,6 @@ public record ApiResponse<T>(
 	}
 
 	private static String now() {
-		return java.time.Instant.now().toString();
+		return Instant.now().toString();
 	}
 }
