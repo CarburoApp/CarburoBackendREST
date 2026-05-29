@@ -18,7 +18,7 @@ import static app.carburo.api.backend.controllers.utilities.HttpConstants.*;
 /**
  * Filtro de validación de API Key para endpoints públicos.
  * <p>
- * Aplica seguridad ligera a rutas /api/v1/public/** comprobando
+ * Aplica seguridad ligera a rutas /api/** comprobando
  * la cabecera X-API-KEY contra la clave configurada en la aplicación.
  * <p>
  * Si la clave es inválida, se devuelve 401 UNAUTHORIZED con un JSON de error.
