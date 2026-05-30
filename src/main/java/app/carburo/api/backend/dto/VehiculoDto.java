@@ -1,11 +1,8 @@
 package app.carburo.api.backend.dto;
 
-import app.carburo.api.backend.entities.Combustible;
 import app.carburo.api.backend.entities.Vehiculo;
 
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * DTO de {@link Vehiculo}. Diseñado para su uso en peticiones REST.
@@ -20,7 +17,7 @@ public record VehiculoDto(
 		double odometro_actual,
 		double capacidad_deposito,
 		String notas,
-		Set<Short> ids_combustibles_utilizados
+		short id_grupo_combustible
 ) {
 
 	public static VehiculoDto from(Vehiculo vehiculo, UUID uuidUsuarioActual, boolean isPropietario) {
@@ -34,9 +31,7 @@ public record VehiculoDto(
 				vehiculo.getOdometroActual().doubleValue(),
 				vehiculo.getCapacidadDeposito().doubleValue(),
 				vehiculo.getNotas(),
-				vehiculo.getCombustibles()
-						.stream().map(Combustible::getId)
-						.collect(Collectors.toSet())
+				vehiculo.getGrupoCombustible().getId()
 		);
 	}
 }

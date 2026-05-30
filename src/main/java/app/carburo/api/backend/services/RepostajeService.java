@@ -135,6 +135,16 @@ public class RepostajeService {
 
         validateRepostajeDto(dto);
 
+        if (combustible.getIdGrupoCombustible() != vehiculo.getGrupoCombustible().getId())
+            throw new InvalidRepostajeDataException(
+                    "El combustible indicado no está dentro del grupo de combustibles aceptados por el vehículo.");
+
+        BigDecimal odoInicial = dto.odometro_inicial() != null ? BigDecimal.valueOf(dto.odometro_inicial()) : null;
+        BigDecimal odoFinal = BigDecimal.valueOf(dto.odometro_final());
+
+        if (repostajeRepository.existsSolapamientoOdomatros(idVehiculo, odoInicial, odoFinal, null))
+            throw new InvalidRepostajeDataException("Conflicto de kilometraje: El odómetro final o la franja indicada entra en conflicto, se solapa o coincide con hitos de un repostaje existente.");
+
         Repostaje repostaje = new Repostaje(vehiculo, combustible, estacion, usuario,
                                             dto.cantidad(), dto.coste_unitario(),
                                             dto.odometro_inicial(), dto.odometro_final(),
@@ -149,6 +159,7 @@ public class RepostajeService {
 
     /**
      * Actualiza un repostaje existente.
+     * Se permite actualizar únicamente la cantidad, coste unitario, odómetro inicial, odómetro final, si el depósito se llenó o no, y la nota.
      * <p>
      * Comprobaciones realizadas:
      * - El vehículo debe existir.
@@ -176,9 +187,23 @@ public class RepostajeService {
 
         validateRepostajeDto(dto);
 
-        repostaje.setCombustible(findCombustibleOrThrow(dto.id_combustible()));
-        repostaje.setEstacionDeServicio(
-                findEstacionOrThrow(dto.id_estacion_de_servicio()));
+        BigDecimal nuevoOdoInicial = dto.odometro_inicial() != null ? BigDecimal.valueOf(dto.odometro_inicial()) : null;
+        BigDecimal nuevoOdoFinal = BigDecimal.valueOf(dto.odometro_final());
+
+        // Comparamos de forma segura contemplando que cualquiera de los dos iniciales pueda ser null
+        boolean haCambiadoInicial = (repostaje.getOdometroInicial() == null && nuevoOdoInicial != null) ||
+                (repostaje.getOdometroInicial() != null && nuevoOdoInicial == null) ||
+                (repostaje.getOdometroInicial() != null && nuevoOdoInicial != null && repostaje.getOdometroInicial().compareTo(nuevoOdoInicial) != 0);
+
+        boolean haCambiadoFinal = repostaje.getOdometroFinal().compareTo(nuevoOdoFinal) != 0;
+
+        // Solo vamos a la base de datos si el usuario editó las casillas de kilómetros
+        if (haCambiadoInicial || haCambiadoFinal) {
+            if (repostajeRepository.existsSolapamientoOdomatros(idVehiculo, nuevoOdoInicial, nuevoOdoFinal, idRepostaje))
+                throw new InvalidRepostajeDataException("La actualización falla: Las nuevas lecturas de odómetro entran en conflicto o se solapan con registros históricos.");
+
+        }
+
         repostaje.setCantidad(dto.cantidad());
         repostaje.setCosteUnitario(dto.coste_unitario());
         repostaje.setOdometroInicial(dto.odometro_inicial());
@@ -359,23 +384,17 @@ public class RepostajeService {
         if (dto.odometro_final() < 0) throw new InvalidRepostajeDataException(
                 "El odómetro final no puede ser negativo");
 
-        if (dto.odometro_inicial() < 0) throw new InvalidRepostajeDataException(
+        if (dto.odometro_inicial() != null && dto.odometro_inicial() < 0)
+            throw new InvalidRepostajeDataException(
                 "El odómetro inicial no puede ser negativo");
 
-        if (dto.odometro_final() < dto.odometro_inicial())
+        if (dto.odometro_inicial() != null &&
+                dto.odometro_final() < dto.odometro_inicial())
             throw new InvalidRepostajeDataException(
                     "El odómetro final no puede ser menor al inicial");
 
         if (dto.nota() != null && dto.nota().length() > 100)
             throw new InvalidRepostajeDataException(
                     "La nota no puede superar los 100 caracteres");
-
-        if (!combustibleRepository.existsById(dto.id_combustible()))
-            throw new InvalidRepostajeDataException("El combustible indicado no existe");
-
-        if (!estacionDeServicioRepository.existsById(dto.id_estacion_de_servicio()))
-            throw new InvalidRepostajeDataException(
-                    "La estación de servicio indicada no existe");
-
     }
 }

@@ -7,7 +7,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -57,19 +56,9 @@ public class Vehiculo {
 	@OneToMany(mappedBy = "vehiculo", fetch = FetchType.LAZY)
 	private Set<VehiculoUsuario> usuariosPropietarios = new HashSet<>();
 
-	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(
-			name = "vehiculo_combustible",
-			joinColumns = @JoinColumn(
-					name = "id_vehiculo",
-					referencedColumnName = "id"
-			),
-			inverseJoinColumns = @JoinColumn(
-					name = "id_combustible",
-					referencedColumnName = "id"
-			)
-	)
-	private Set<Combustible> combustibles = new HashSet<>();
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id_grupo_combustible", nullable = false)
+	private GrupoCombustible grupoCombustible;
 
 	@PrePersist
 	public void prePersist() {
@@ -85,7 +74,7 @@ public class Vehiculo {
 
 	public Vehiculo(Integer id, String matricula, String marca, String modelo,
 					double odometroActual, double capacidadDeposito, String notas,
-					Collection<Combustible> combustibles, OffsetDateTime fechaRegistro,
+					GrupoCombustible grupoCombustible, OffsetDateTime fechaRegistro,
 					OffsetDateTime fechaModificacion) {
 		setId(id);
 		setMatricula(matricula);
@@ -94,23 +83,23 @@ public class Vehiculo {
 		setOdometroActual(odometroActual);
 		setCapacidadDeposito(capacidadDeposito);
 		setNotas(notas);
-		setCombustibles(new HashSet<>(combustibles));
+		setGrupoCombustible(grupoCombustible);
 		setFechaRegistro(fechaRegistro);
 		setFechaModificacion(fechaModificacion);
 	}
 
 	public Vehiculo(int id, String matricula, String marca, String modelo,
 					double odometroActual, double capacidadDeposito,
-					Collection<Combustible> combustibles, String notas) {
+					GrupoCombustible grupoCombustible, String notas) {
 		this(id, matricula, marca, modelo, odometroActual, capacidadDeposito, notas,
-			 combustibles, OffsetDateTime.now(), OffsetDateTime.now());
+			 grupoCombustible, OffsetDateTime.now(), OffsetDateTime.now());
 	}
 
 	public Vehiculo(String matricula, String marca, String modelo, double odometroActual,
-					double capacidadDeposito, Collection<Combustible> combustibles,
+					double capacidadDeposito, GrupoCombustible grupoCombustible,
 					String notas) {
 		this(null, matricula, marca, modelo, odometroActual, capacidadDeposito, notas,
-			 combustibles, OffsetDateTime.now(), OffsetDateTime.now());
+			 grupoCombustible, OffsetDateTime.now(), OffsetDateTime.now());
 	}
 
 	public void setOdometroActual(double odometroActual) {
@@ -122,6 +111,6 @@ public class Vehiculo {
 	public void setCapacidadDeposito(double capacidadDeposito) {
 		if (capacidadDeposito < 0) throw new IllegalArgumentException(
 				"La capacidad del deposito no puede ser negativo ni nulo.");
-		this.odometroActual = BigDecimal.valueOf(capacidadDeposito);
+		this.capacidadDeposito = BigDecimal.valueOf(capacidadDeposito);
 	}
 }

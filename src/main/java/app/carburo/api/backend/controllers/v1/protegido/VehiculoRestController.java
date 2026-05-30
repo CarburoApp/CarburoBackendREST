@@ -143,7 +143,7 @@ public class VehiculoRestController extends BaseProtectedRestController {
 	 *     <li>El vehículo debe pertenecer al usuario indicado.</li>
 	 *
 	 * Se permite modificar únicamente:
-	 * matricula, marca, modelo, odometro_actual, capacidad_deposito,notas e ids_combustibles_utilizados
+	 * matrícula, marca, modelo, odometro_actual, capacidad_deposito y las notas
 	 *
 	 * @param uuid       UUID del usuario autenticado
 	 * @param idVehiculo ID del vehículo
@@ -242,6 +242,7 @@ public class VehiculoRestController extends BaseProtectedRestController {
 
 	/**
 	 * Actualiza un repostaje existente.
+	 * Se permite actualizar únicamente la cantidad, coste unitario, odómetro inicial, odómetro final, si el depósito se llenó o no, y la nota.
 	 * <p>
 	 * Endpoint: PATCH /api/v1/vehiculos/{uuid}/{idVehiculo}/repostajes/{idRepostaje}
 	 * <p>

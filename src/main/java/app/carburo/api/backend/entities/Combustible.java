@@ -3,6 +3,7 @@ package app.carburo.api.backend.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -49,6 +50,18 @@ public class Combustible {
 	private short extCode;
 
 	/**
+	 * Asigna el grupo lógico al que pertenece el combustible (puede ser null).
+	 */
+	@Setter
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id_grupo_combustible", nullable = true, insertable = false, updatable = false)
+	private GrupoCombustible grupoCombustible;
+
+	// Campo espejo que apunta a la misma columna de la BD, pero es un tipo primitivo/básico
+	@Column(name = "id_grupo_combustible")
+	private Short idGrupoCombustible;
+
+	/**
 	 * Relación Muchos a Muchos con estaciones de servicio.
 	 * Un combustible puede estar disponible en varias estaciones.
 	 * Se mapea desde la propiedad "combustiblesDisponibles" de {@link EstacionDeServicio}.
@@ -67,12 +80,16 @@ public class Combustible {
 	 * @param denominacion Nombre del combustible
 	 * @param codigo       Código abreviado interno
 	 * @param extCode      Código externo único
+	 * @param grupoCombustible Grupo lógico al que pertenece el combustible (puede ser null)
 	 */
-	public Combustible(short id, String denominacion, String codigo, short extCode) {
+	public Combustible(short id, String denominacion, String codigo, short extCode,
+					   GrupoCombustible grupoCombustible) {
 		setId(id);
 		setDenominacion(denominacion);
 		setCodigo(codigo);
 		setExtCode(extCode);
+		setGrupoCombustible(grupoCombustible);
+		this.idGrupoCombustible = grupoCombustible.getId();
 	}
 
 	// ==============================

@@ -30,6 +30,7 @@ public final class HttpConstants {
 	public static final String API_BASE_PATH_STATUS = "/public/status";
 
 	public static final String API_PATH_COMBUSTIBLES = "/combustibles";
+	public static final String API_PATH_GRUPO_COMBUSTIBLES = "/grupos-de-combustibles";
 	public static final String API_PATH_COMUNIDADES_AUTONOMAS = "/comunidades-autonomas";
 	public static final String API_PATH_PROVINCIAS = "/provincias";
 	public static final String API_PATH_MUNICIPIOS = "/municipios";
@@ -40,6 +41,10 @@ public final class HttpConstants {
 	// PUBLICOS
 	public static final String API_ENDPOINT_COMBUSTIBLES =
 			API_BASE_PATH_PUBLIC + API_PATH_COMBUSTIBLES;
+	public static final String API_ENDPOINT_GRUPO_COMBUSTIBLES =
+			API_BASE_PATH_PUBLIC + API_PATH_GRUPO_COMBUSTIBLES;
+	public static final String API_ENDPOINT_GRUPO_COMBUSTIBLES_CON_COMBUSTIBLES =
+			API_ENDPOINT_GRUPO_COMBUSTIBLES + API_PATH_COMBUSTIBLES;
 	public static final String API_ENDPOINT_MUNICIPIOS =
 			API_BASE_PATH_PUBLIC + API_PATH_MUNICIPIOS;
 	public static final String API_ENDPOINT_MUNICIPIOS_PROVINCIA = "/provincia";

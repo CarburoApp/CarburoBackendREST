@@ -1,15 +1,9 @@
 package app.carburo.api.backend.services;
 
 import app.carburo.api.backend.dto.VehiculoDto;
-import app.carburo.api.backend.entities.Combustible;
-import app.carburo.api.backend.entities.Usuario;
-import app.carburo.api.backend.entities.Vehiculo;
-import app.carburo.api.backend.entities.VehiculoUsuario;
+import app.carburo.api.backend.entities.*;
 import app.carburo.api.backend.exceptions.*;
-import app.carburo.api.backend.repositories.CombustibleRepository;
-import app.carburo.api.backend.repositories.UsuarioRepository;
-import app.carburo.api.backend.repositories.VehiculoRepository;
-import app.carburo.api.backend.repositories.VehiculoUsuarioRepository;
+import app.carburo.api.backend.repositories.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +11,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Servicio encargado de la gestión de vehículos dentro del sistema.
@@ -38,7 +31,7 @@ public class VehiculoService {
     private final VehiculoRepository vehiculoRepository;
     private final VehiculoUsuarioRepository vehiculoUsuarioRepository;
     private final UsuarioRepository usuarioRepository;
-    private final CombustibleRepository combustibleRepository;
+    private final GrupoCombustibleRepository grupoCombustibleRepository;
 
     /**
      * Constructor con inyección de dependencias.
@@ -49,11 +42,11 @@ public class VehiculoService {
     public VehiculoService(VehiculoRepository vehiculoRepository,
                            VehiculoUsuarioRepository vehiculoUsuarioRepository,
                            UsuarioRepository usuarioRepository,
-                           CombustibleRepository combustibleRepository) {
+                           GrupoCombustibleRepository grupoCombustibleRepository) {
         this.vehiculoRepository = vehiculoRepository;
         this.usuarioRepository = usuarioRepository;
         this.vehiculoUsuarioRepository = vehiculoUsuarioRepository;
-        this.combustibleRepository     = combustibleRepository;
+        this.grupoCombustibleRepository     = grupoCombustibleRepository;
     }
 
     /**
@@ -120,12 +113,11 @@ public class VehiculoService {
 
         validateVehiculoDto(dto);
 
-        Set<Combustible> combustibles = dto.ids_combustibles_utilizados().stream()
-                .map(this::getCombustiblesOrThrow).collect(Collectors.toSet());
+        GrupoCombustible gC = getGrupoDeCombustiblesOrThrow(dto.id_grupo_combustible());
 
         Vehiculo vehiculo = new Vehiculo(dto.matricula(), dto.marca(), dto.modelo(),
                                          dto.odometro_actual(), dto.capacidad_deposito(),
-                                         combustibles, dto.notas());
+                                         gC, dto.notas());
 
         vehiculo = vehiculoRepository.save(vehiculo);
 
@@ -157,13 +149,9 @@ public class VehiculoService {
         vehiculo.setOdometroActual(dto.odometro_actual());
         vehiculo.setCapacidadDeposito(dto.capacidad_deposito());
 
-        Set<Combustible> combustibles = combustibleRepository.findAllByIdIn(
-                dto.ids_combustibles_utilizados());
-
-        vehiculo.setCombustibles(combustibles);
-
         vehiculo.setNotas(dto.notas());
 
+        // Nueva actualización - registro
         vehiculo.setFechaModificacion(OffsetDateTime.now());
 
         vehiculoRepository.save(vehiculo);
@@ -248,14 +236,14 @@ public class VehiculoService {
 
 
     /**
-     * Obtiene un combustible por ID o lanza excepción si no existe.
+     * Obtiene un grupo de combustibles por ID o lanza excepción si no existe.
      *
-     * @param id identificador del combustible
-     * @return entidad Combustible
-     * @throws ResourceNotFoundException si el combustible no existe
+     * @param id identificador del grupo de combustible
+     * @return entidad {@link GrupoCombustible}
+     * @throws ResourceNotFoundException si el grupo de combustible no existe
      */
-    private Combustible getCombustiblesOrThrow(short id) {
-        return combustibleRepository.findById(id)
+    private GrupoCombustible getGrupoDeCombustiblesOrThrow(short id) {
+        return grupoCombustibleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Combustible no encontrado: " + id));
     }
 
@@ -288,18 +276,6 @@ public class VehiculoService {
         if (dto.capacidad_deposito() < 0) {
             throw new InvalidVehiculoDataException(
                     "La capacidad del depósito debe ser mayor que 0");
-        }
-
-        if (dto.ids_combustibles_utilizados() == null ||
-                dto.ids_combustibles_utilizados().isEmpty()) {
-            throw new InvalidVehiculoDataException(
-                    "Los combustibles utilizados no pueden ser nulo o vacío.");
-        }
-
-        if (!combustibleRepository.existsAllByIdIn(dto.ids_combustibles_utilizados())) {
-            throw new InvalidVehiculoDataException(
-                    "Algunos combustibles indicados como utilizados no son válidos: " +
-                            dto.ids_combustibles_utilizados());
         }
     }
 }

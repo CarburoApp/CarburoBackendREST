@@ -156,7 +156,7 @@ public class UsuarioService {
 
         if (dto.ids_combustibles_favoritos() == null) {
             usuario.getCombustiblesFavoritos()
-                    .addAll(combustibleQueryService.findAllCached());
+                    .addAll(combustibleQueryService.findAllCombustiblesCached());
         } else {
             usuario.getCombustiblesFavoritos()
                     .addAll(dto.ids_combustibles_favoritos()
@@ -201,7 +201,7 @@ public class UsuarioService {
         Usuario usuario = findUsuarioOrThrow(uuid);
 
         Set<Combustible> nuevos = (ids == null) ? new HashSet<>(
-                combustibleQueryService.findAllCached())
+                combustibleQueryService.findAllCombustiblesCached())
                 : ids.stream()
                 .map(this::getCombustibleOrThrow)
                 .collect(Collectors.toSet());

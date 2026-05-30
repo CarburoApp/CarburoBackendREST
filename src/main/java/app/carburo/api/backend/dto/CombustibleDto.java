@@ -8,14 +8,16 @@ import app.carburo.api.backend.entities.Combustible;
 public record CombustibleDto(
 		short id,
 		String denominacion,
-		String codigo
+		String codigo,
+		Short id_grupo_combustible
 ) {
 
 	public static CombustibleDto from(Combustible c) {
 		return new CombustibleDto(
 				c.getId(),
 				c.getDenominacion(),
-				c.getCodigo()
+				c.getCodigo(),
+				c.getIdGrupoCombustible()
 		);
 	}
 }
