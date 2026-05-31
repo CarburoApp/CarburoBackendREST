@@ -113,7 +113,7 @@ public class Vehiculo {
 	public void setMarca(String marca) {
 		if (marca == null || marca.trim().isEmpty())
 			throw new IllegalArgumentException("La marca no puede estar vacía.");
-		if (matricula.trim().length() > 40) throw new IllegalArgumentException(
+		if (marca.trim().length() > 40) throw new IllegalArgumentException(
 				"La marca no puede superar los 40 caracteres.");
 		this.marca = marca.trim();
 	}
@@ -121,7 +121,7 @@ public class Vehiculo {
 	public void setModelo(String modelo) {
 		if (modelo == null || modelo.trim().isEmpty())
 			throw new IllegalArgumentException("El modelo no puede estar vacío.");
-		if (matricula.trim().length() > 40) throw new IllegalArgumentException(
+		if (modelo.trim().length() > 40) throw new IllegalArgumentException(
 				"El modelo no puede superar los 40 caracteres.");
 		this.modelo = modelo.trim();
 	}
