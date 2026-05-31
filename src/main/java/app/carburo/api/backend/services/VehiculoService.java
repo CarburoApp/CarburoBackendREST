@@ -272,9 +272,9 @@ public class VehiculoService {
             throw new InvalidVehiculoDataException(
                     "El modelo es obligatorio y con longitud <= 40.");
 
-        if (dto.matricula() == null || dto.matricula().isBlank() ||
-                dto.matricula().length() > 20) throw new InvalidVehiculoDataException(
-                "La matricula es obligatoria y con longitud <= 20.");
+        if (dto.matricula() != null && (dto.matricula().isBlank() ||
+                dto.matricula().length() > 20)) throw new InvalidVehiculoDataException(
+                "Si se incluye matrícula, debe de no ser vacía y con longitud <= 20.");
 
         if (dto.odometro_actual() < 0) throw new InvalidVehiculoDataException(
                 "El odómetro actual no puede ser negativo");
