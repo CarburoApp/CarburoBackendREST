@@ -5,13 +5,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.OffsetDateTime;
+import java.util.Objects;
+
+import static app.carburo.api.backend.entities.Vehiculo.*;
 
 @Entity
 @Table(name = "repostaje")
 @Getter
 @NoArgsConstructor
 public class Repostaje {
+
+	public static final double COSTE_UNITARIO_MIN_VALUE = 0;
+	public static final double COSTE_UNITARIO_MAX_VALUE = 999.999;
 
 	// PK
 	@Id
@@ -41,10 +48,10 @@ public class Repostaje {
 	@Column(name = "fecha_registro", nullable = false)
 	private OffsetDateTime fechaRegistro;
 
-	@Column(name = "cantidad", nullable = false, precision = 6, scale = 2)
+	@Column(name = "cantidad", nullable = false, precision = 7, scale = 2)
 	private BigDecimal cantidad;
 
-	@Column(name = "coste_unitario", nullable = false, precision = 6, scale = 2)
+	@Column(name = "coste_unitario", nullable = false, precision = 6, scale = 3)
 	private BigDecimal costeUnitario;
 
 	@Column(name = "odometro_inicial", precision = 9, scale = 2)
@@ -127,37 +134,39 @@ public class Repostaje {
 	}
 
 	public void setCantidad(double cantidad) {
-		if (cantidad <= 0) throw new IllegalArgumentException(
-				"La cantidad repostada debe ser mayor que 0.");
-
-		this.cantidad = BigDecimal.valueOf(cantidad);
+		if (cantidad <= CAPACIDAD_DEPOSITO_MIN_VALUE || cantidad > CAPACIDAD_DEPOSITO_MAX_VALUE) throw new IllegalArgumentException(
+				"La cantidad repostada no puede ser menor o igual a 0 ni mayor a 99.999,99.");
+		this.cantidad = BigDecimal.valueOf(cantidad).setScale(2, RoundingMode.HALF_UP);
 	}
 
 	public void setCosteUnitario(double costeUnitario) {
-		if (costeUnitario < 0) throw new IllegalArgumentException(
-				"El coste unitario no puede ser negativo.");
+		if (costeUnitario < COSTE_UNITARIO_MIN_VALUE || costeUnitario > COSTE_UNITARIO_MAX_VALUE) throw new IllegalArgumentException(
+				"El coste unitario no puede ser menor o igual a cero ni mayor 999,999.");
 
-		this.costeUnitario = BigDecimal.valueOf(costeUnitario);
+		this.costeUnitario = BigDecimal.valueOf(costeUnitario).setScale(3, RoundingMode.HALF_UP);
 	}
 
 	public void setOdometroInicial(Double odometroInicial) {
-		if (odometroInicial != null && odometroInicial < 0)
+		if (odometroInicial != null &&
+				(odometroInicial < ODOMETRO_MIN_VALUE || odometroInicial > ODOMETRO_MAX_VALUE))
 			throw new IllegalArgumentException(
-					"El odómetro inicial no puede ser negativo.");
+					"El odómetro inicial no puede ser negativo ni mayor a 9.999.999,99.");
 
 		this.odometroInicial = (odometroInicial == null) ? null : BigDecimal.valueOf(
-				odometroInicial);
+				odometroInicial).setScale(2, RoundingMode.HALF_UP);
 	}
 
 	public void setOdometroFinal(double odometroFinal) {
-		if (odometroFinal < 0) throw new IllegalArgumentException(
-				"El odómetro final no puede ser negativo.");
+		if (odometroFinal < ODOMETRO_MIN_VALUE || odometroFinal > ODOMETRO_MAX_VALUE)
+			throw new IllegalArgumentException(
+					"El odómetro final no puede ser negativo ni mayor a 9.999.999,99.");
 		if (this.odometroInicial != null &&
 				BigDecimal.valueOf(odometroFinal).compareTo(this.odometroInicial) < 0)
 			throw new IllegalArgumentException(
 					"El odómetro final no puede ser menor al inicial.");
 
-		this.odometroFinal = BigDecimal.valueOf(odometroFinal);
+		this.odometroFinal = BigDecimal.valueOf(odometroFinal)
+				.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	public void setDepositoLleno(Boolean depositoLleno) {
@@ -168,11 +177,23 @@ public class Repostaje {
 	}
 
 	public void setNota(String nota) {
-
-		if (nota != null && nota.length() > 100) throw new IllegalArgumentException(
+		if (nota != null && nota.trim().length() > 100)
+			throw new IllegalArgumentException(
 				"La nota no puede superar los 100 caracteres.");
 
-		this.nota = nota;
+		this.nota = nota == null ? null : nota.trim();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		Repostaje repostaje = (Repostaje) o;
+		return Objects.equals(id, repostaje.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(id);
 	}
 }
 

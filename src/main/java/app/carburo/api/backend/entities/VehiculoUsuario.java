@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "vehiculo_usuario")
 @Getter
@@ -38,4 +40,16 @@ public class VehiculoUsuario {
 	}
 
 	public Boolean isPropietario() {return propietario;}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		VehiculoUsuario that = (VehiculoUsuario) o;
+		return Objects.equals(id, that.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(id);
+	}
 }

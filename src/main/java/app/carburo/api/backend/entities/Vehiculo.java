@@ -6,8 +6,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -16,6 +18,12 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 public class Vehiculo {
+
+	// Constantes de validación
+	public static final int ODOMETRO_MIN_VALUE = 0;
+	public static final double ODOMETRO_MAX_VALUE = 9_999_999.99;
+	public static final double CAPACIDAD_DEPOSITO_MIN_VALUE = 0;
+	public static final double CAPACIDAD_DEPOSITO_MAX_VALUE = 99_999.99;
 
 	// PK
 	@Id
@@ -102,15 +110,57 @@ public class Vehiculo {
 			 grupoCombustible, OffsetDateTime.now(), OffsetDateTime.now());
 	}
 
+	public void setMarca(String marca) {
+		if (marca == null || marca.trim().isEmpty())
+			throw new IllegalArgumentException("La marca no puede estar vacía.");
+		if (matricula.trim().length() > 40) throw new IllegalArgumentException(
+				"La marca no puede superar los 40 caracteres.");
+		this.marca = marca.trim();
+	}
+
+	public void setModelo(String modelo) {
+		if (modelo == null || modelo.trim().isEmpty())
+			throw new IllegalArgumentException("El modelo no puede estar vacío.");
+		if (matricula.trim().length() > 40) throw new IllegalArgumentException(
+				"El modelo no puede superar los 40 caracteres.");
+		this.modelo = modelo.trim();
+	}
+
+	public void setMatricula(String matricula) {
+		if (matricula == null || matricula.trim().isEmpty()) {
+			this.matricula = null;
+			return;
+		}
+		if (matricula.trim().length() > 20) throw new IllegalArgumentException(
+				"La matrícula no puede superar los 20 caracteres.");
+		this.matricula = matricula.trim();
+	}
+
 	public void setOdometroActual(double odometroActual) {
-		if (odometroActual < 0) throw new IllegalArgumentException(
-				"El odómetro actual no puede ser negativo ni nulo.");
-		this.odometroActual = BigDecimal.valueOf(odometroActual);
+		if (odometroActual < ODOMETRO_MIN_VALUE || odometroActual > ODOMETRO_MAX_VALUE)
+			throw new IllegalArgumentException(
+					"El odómetro actual no puede ser negativo ni mayor a 9.999.999,99");
+		this.odometroActual = BigDecimal.valueOf(odometroActual)
+				.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	public void setCapacidadDeposito(double capacidadDeposito) {
-		if (capacidadDeposito < 0) throw new IllegalArgumentException(
-				"La capacidad del deposito no puede ser negativo ni nulo.");
-		this.capacidadDeposito = BigDecimal.valueOf(capacidadDeposito);
+		if (capacidadDeposito < CAPACIDAD_DEPOSITO_MIN_VALUE || capacidadDeposito > CAPACIDAD_DEPOSITO_MAX_VALUE)
+			throw new IllegalArgumentException(
+					"La capacidad del deposito no puede ser negativo ni mayor a 99.999,99");
+		this.capacidadDeposito = BigDecimal.valueOf(capacidadDeposito)
+				.setScale(2, RoundingMode.HALF_UP);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		Vehiculo vehiculo = (Vehiculo) o;
+		return Objects.equals(id, vehiculo.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(id);
 	}
 }

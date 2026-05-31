@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 
 @Embeddable
@@ -12,7 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
 public class VehiculoUsuarioId implements Serializable {
 
 	@Serial
@@ -20,4 +20,24 @@ public class VehiculoUsuarioId implements Serializable {
 
 	private Integer vehiculoId;
 	private UUID usuarioUuid;
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		VehiculoUsuarioId that = (VehiculoUsuarioId) o;
+		return Objects.equals(vehiculoId, that.vehiculoId) &&
+				Objects.equals(usuarioUuid, that.usuarioUuid);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(vehiculoId, usuarioUuid);
+	}
+
+	@Override
+	public String toString() {
+		String sb = "VehiculoUsuarioId{" + "vehiculoId=" + vehiculoId + ", usuarioUuid=" +
+				usuarioUuid + '}';
+		return sb;
+	}
 }

@@ -13,6 +13,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import static app.carburo.api.backend.entities.Repostaje.COSTE_UNITARIO_MAX_VALUE;
+import static app.carburo.api.backend.entities.Repostaje.COSTE_UNITARIO_MIN_VALUE;
+import static app.carburo.api.backend.entities.Vehiculo.*;
+
 /**
  * Servicio encargado de la gestión de los repostajes de los vehículos.
  *
@@ -375,21 +379,23 @@ public class RepostajeService {
         if (dto == null)
             throw new InvalidRepostajeDataException("El repostaje no puede ser nulo");
 
-        if (dto.cantidad() <= 0) throw new InvalidRepostajeDataException(
-                "La cantidad repostada debe ser mayor que 0");
+        if (dto.cantidad() <= CAPACIDAD_DEPOSITO_MIN_VALUE ||
+                dto.cantidad() > CAPACIDAD_DEPOSITO_MAX_VALUE)
+            throw new InvalidRepostajeDataException(
+                    "La cantidad repostada debe ser mayor que 0 y menor que 99.999,99");
 
-        if (dto.coste_unitario() <= 0) throw new InvalidRepostajeDataException(
-                "El coste unitario debe ser mayor que 0");
+        if (dto.coste_unitario() <= COSTE_UNITARIO_MIN_VALUE || dto.coste_unitario() > COSTE_UNITARIO_MAX_VALUE) throw new InvalidRepostajeDataException(
+                "El coste unitario debe ser mayor que 0 y menor que 999,999");
 
-        if (dto.odometro_final() < 0) throw new InvalidRepostajeDataException(
-                "El odómetro final no puede ser negativo");
+        if (dto.odometro_final() < ODOMETRO_MIN_VALUE || dto.coste_unitario() > ODOMETRO_MAX_VALUE) throw new InvalidRepostajeDataException(
+                "El odómetro final no puede ser negativo ni mayor a 9.999.999,99");
 
         if (dto.odometro_inicial() != null && dto.odometro_inicial() < 0)
             throw new InvalidRepostajeDataException(
                 "El odómetro inicial no puede ser negativo");
 
         if (dto.odometro_inicial() != null &&
-                dto.odometro_final() < dto.odometro_inicial())
+                dto.odometro_final() <= dto.odometro_inicial())
             throw new InvalidRepostajeDataException(
                     "El odómetro final no puede ser menor al inicial");
 

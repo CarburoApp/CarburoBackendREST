@@ -1,16 +1,24 @@
 package app.carburo.api.backend.services;
 
 import app.carburo.api.backend.dto.VehiculoDto;
-import app.carburo.api.backend.entities.*;
+import app.carburo.api.backend.entities.GrupoCombustible;
+import app.carburo.api.backend.entities.Usuario;
+import app.carburo.api.backend.entities.Vehiculo;
+import app.carburo.api.backend.entities.VehiculoUsuario;
 import app.carburo.api.backend.exceptions.*;
-import app.carburo.api.backend.repositories.*;
+import app.carburo.api.backend.repositories.GrupoCombustibleRepository;
+import app.carburo.api.backend.repositories.UsuarioRepository;
+import app.carburo.api.backend.repositories.VehiculoRepository;
+import app.carburo.api.backend.repositories.VehiculoUsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
+
+import static app.carburo.api.backend.entities.Vehiculo.CAPACIDAD_DEPOSITO_MAX_VALUE;
+import static app.carburo.api.backend.entities.Vehiculo.ODOMETRO_MAX_VALUE;
 
 /**
  * Servicio encargado de la gestión de vehículos dentro del sistema.
@@ -268,14 +276,15 @@ public class VehiculoService {
                 dto.matricula().length() > 20) throw new InvalidVehiculoDataException(
                 "La matricula es obligatoria y con longitud <= 20.");
 
-        if (dto.odometro_actual() < 0) {
+        if (dto.odometro_actual() < 0) throw new InvalidVehiculoDataException(
+                "El odómetro actual no puede ser negativo");
+        else if (dto.odometro_actual() > ODOMETRO_MAX_VALUE)
             throw new InvalidVehiculoDataException(
-                    "El odómetro actual no puede ser menor al inicial");
-        }
+                    "El valor máximo del odómetro actual es 9.999.999,99");
 
-        if (dto.capacidad_deposito() < 0) {
+        if (dto.capacidad_deposito() < 0 ||
+                dto.capacidad_deposito() > CAPACIDAD_DEPOSITO_MAX_VALUE)
             throw new InvalidVehiculoDataException(
-                    "La capacidad del depósito debe ser mayor que 0");
-        }
+                    "La capacidad del depósito debe ser mayor que 0 y menor que 99.999,99");
     }
 }
