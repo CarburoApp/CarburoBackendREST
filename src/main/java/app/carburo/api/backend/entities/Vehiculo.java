@@ -58,10 +58,10 @@ public class Vehiculo {
 	@Column(name = "fecha_modificacion")
 	private OffsetDateTime fechaModificacion;
 
-	@OneToMany(mappedBy = "vehiculo", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "vehiculo", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Repostaje> repostajes = new HashSet<>();
 
-	@OneToMany(mappedBy = "vehiculo", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "vehiculo", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<VehiculoUsuario> usuariosPropietarios = new HashSet<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
