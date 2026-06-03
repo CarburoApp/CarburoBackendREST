@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>app.carburo.api</groupId>
 	<artifactId>CarburoBackendREST</artifactId>
-	<version>0.9.1</version>
+	<version>0.9.2</version>
 	<name>CarburoBackendREST</name>
 	<description>Backend que dispone una API REST para el consumo por parte de la aplicación Carburo. TFG - Manuel García Baldó 2025-2026</description>
 
