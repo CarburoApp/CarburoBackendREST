@@ -15,8 +15,15 @@ import java.util.List;
 @Repository
 public interface EstacionDeServicioRepository extends CrudRepository<EstacionDeServicio, Integer> {
 
+	List<EstacionDeServicio> findAll();
+
 	/** Devuelve una estación de servicio según su ID */
 	EstacionDeServicio findEstacionDeServicioById(int id);
+
+	/**
+	 * Devuelve las estaciones de servicio según sus ID
+	 */
+	List<EstacionDeServicio> findAllById(Iterable<Integer> ids);
 
 	/**
 	 * Devuelve las estaciones de un municipio específico.
@@ -88,4 +95,5 @@ public interface EstacionDeServicioRepository extends CrudRepository<EstacionDeS
 	)
 	Long findDistanciaById(@Param("id") int id, @Param("lat") double lat,
 						   @Param("lon") double lon);
+
 }

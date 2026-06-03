@@ -8,6 +8,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import lombok.extern.slf4j.Slf4j;
 
 import java.security.interfaces.ECPublicKey;
 import java.util.UUID;
@@ -36,6 +37,7 @@ import java.util.concurrent.TimeUnit;
  * devuelve null.
  * </p>
  */
+@Slf4j
 public class JwtValidator {
 
 	/**
@@ -97,8 +99,8 @@ public class JwtValidator {
 		} catch (TokenExpiredException e) {
 			throw e;
 		} catch (Exception e) {
+			log.error("Ha ocurrido un error durante la validación del JWT. El token es inválido.",e);
 			// Error en validación → token inválido
-			e.printStackTrace();
 			return null;
 		}
 	}

@@ -1,6 +1,5 @@
 package app.carburo.api.backend.services;
 
-import app.carburo.api.backend.dto.EstacionDeServicioDto;
 import app.carburo.api.backend.dto.UsuarioDto;
 import app.carburo.api.backend.entities.Combustible;
 import app.carburo.api.backend.entities.EstacionDeServicio;
@@ -10,11 +9,11 @@ import app.carburo.api.backend.exceptions.InvalidUsuarioDataException;
 import app.carburo.api.backend.exceptions.ResourceNotFoundException;
 import app.carburo.api.backend.exceptions.UsuarioAlreadyExistsException;
 import app.carburo.api.backend.repositories.CombustibleRepository;
-import app.carburo.api.backend.repositories.EstacionDeServicioRepository;
 import app.carburo.api.backend.repositories.ProvinciaRepository;
 import app.carburo.api.backend.repositories.UsuarioRepository;
 import app.carburo.api.backend.services.queryServices.CombustibleQueryService;
 import jakarta.transaction.Transactional;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -38,8 +37,8 @@ import java.util.stream.Collectors;
 @Service
 public class UsuarioService {
 
+    private final EstacionDeServicioService estacionDeServicioService;
     private final UsuarioRepository usuarioRepository;
-    private final EstacionDeServicioRepository estacionDeServicioRepository;
     private final ProvinciaRepository provinciaRepository;
     private final CombustibleRepository combustibleRepository;
     private final CombustibleQueryService combustibleQueryService;
@@ -48,17 +47,17 @@ public class UsuarioService {
      * Constructor con inyección de dependencias.
      *
      * @param usuarioRepository repositorio de usuarios
-     * @param estacionDeServicioRepository repositorio de estaciones de servicio
+     * @param estacionDeServicioService servicio de estaciones de servicio
      * @param provinciaRepository repositorio de provincias
      * @param combustibleQueryService repositorio de combustibles
      */
     public UsuarioService(UsuarioRepository usuarioRepository,
-                          EstacionDeServicioRepository estacionDeServicioRepository,
+                          EstacionDeServicioService estacionDeServicioService,
                           ProvinciaRepository provinciaRepository,
                           CombustibleRepository combustibleRepository,
                           CombustibleQueryService combustibleQueryService) {
+        this.estacionDeServicioService = estacionDeServicioService;
         this.usuarioRepository       = usuarioRepository;
-        this.estacionDeServicioRepository = estacionDeServicioRepository;
         this.provinciaRepository     = provinciaRepository;
         this.combustibleRepository   = combustibleRepository;
         this.combustibleQueryService = combustibleQueryService;
@@ -115,19 +114,16 @@ public class UsuarioService {
     }
 
     /**
-     * Obtiene las estaciones de servicio favoritas del usuario en formato DTO.
+     * Obtiene los ids de las estaciones de servicio favoritas del usuario..
      *
      * @param uuid identificador único del usuario
-     * @return lista de estaciones de servicio favoritas
+     * @return lista de ids de las estaciones de servicio favoritas
      * @throws ResourceNotFoundException si el usuario no existe
      */
-    public List<EstacionDeServicioDto> getEstacionesDeServicioFavoritasDto(UUID uuid) {
-        Usuario usuario = findUsuarioOrThrow(uuid);
-
-        return usuario.getEessFavoritas()
-                .stream()
-                .map(EstacionDeServicioDto::from)
-                .toList();
+    @SneakyThrows
+    public List<Integer> getEstacionesDeServicioFavoritasDto(UUID uuid) {
+        findUsuarioOrThrow(uuid);
+        return usuarioRepository.findEstacionesFavoritasIdsByUuid(uuid);
     }
 
     /**
@@ -221,11 +217,11 @@ public class UsuarioService {
      */
     @Transactional
     public void addEstacionDeServicioFavorita(UUID uuid, int estacionId) {
-
         Usuario usuario = findUsuarioOrThrow(uuid);
 
-        EstacionDeServicio estacion = estacionDeServicioRepository.findById(estacionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Estación no encontrada"));
+        estacionDeServicioService.existsOrThrow(estacionId);
+        EstacionDeServicio estacion = estacionDeServicioService.getEstacionDeServicioById(
+                estacionId);
 
         usuario.getEessFavoritas().add(estacion);
 
@@ -241,11 +237,11 @@ public class UsuarioService {
      */
     @Transactional
     public void removeEstacionDeServicioFavorita(UUID uuid, int estacionId) {
-
         Usuario usuario = findUsuarioOrThrow(uuid);
 
-        EstacionDeServicio estacion = estacionDeServicioRepository.findById(estacionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Estación no encontrada"));
+        estacionDeServicioService.existsOrThrow(estacionId);
+        EstacionDeServicio estacion = estacionDeServicioService.getEstacionDeServicioById(
+                estacionId);
 
         usuario.getEessFavoritas().remove(estacion);
 

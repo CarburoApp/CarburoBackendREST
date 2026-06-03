@@ -54,7 +54,7 @@ public class Combustible {
 	 */
 	@Setter
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id_grupo_combustible", nullable = true, insertable = false, updatable = false)
+	@JoinColumn(name = "id_grupo_combustible", insertable = false, updatable = false)
 	private GrupoCombustible grupoCombustible;
 
 	// Campo espejo que apunta a la misma columna de la BD, pero es un tipo primitivo/básico

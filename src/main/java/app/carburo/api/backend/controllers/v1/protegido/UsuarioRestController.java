@@ -105,7 +105,7 @@ public class UsuarioRestController extends BaseProtectedRestController {
 	 * @throws UnauthorizedException si el UUID no coincide con el usuario autenticado
 	 */
 	@GetMapping("/{uuid}/estaciones-de-servicio-favoritas")
-	public ResponseEntity<ApiResponse<List<EstacionDeServicioDto>>> doGetEstacionesFavoritas(
+	public ResponseEntity<ApiResponse<List<Integer>>> doGetEstacionesFavoritas(
 			@PathVariable UUID uuid) {
 		validateOwnership(uuid);
 		return ResponseEntity.ok(

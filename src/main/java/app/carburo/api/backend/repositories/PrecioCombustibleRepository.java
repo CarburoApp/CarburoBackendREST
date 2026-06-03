@@ -33,4 +33,13 @@ public interface PrecioCombustibleRepository
 
 
 	boolean existsById_Fecha(LocalDate today);
+
+	@Query("SELECT " +
+			"c.id, c.denominacion, c.codigo, c.idGrupoCombustible, " +
+			"ROUND(AVG(p.precio), 3), MAX(p.precio), MIN(p.precio), COUNT(p.estacion.id) " +
+			"FROM PrecioCombustible p " +
+			"JOIN p.combustible c " +
+			"WHERE p.id.fecha = :fecha " +
+			"GROUP BY c.id, c.denominacion, c.codigo, c.idGrupoCombustible")
+	List<Object[]> findRawEstadisticasGlobalesPorFecha(@Param("fecha") LocalDate fecha);
 }

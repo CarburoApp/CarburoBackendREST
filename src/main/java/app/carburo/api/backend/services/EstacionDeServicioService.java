@@ -1,16 +1,18 @@
 package app.carburo.api.backend.services;
 
+import app.carburo.api.backend.dto.CombustibleDto;
 import app.carburo.api.backend.dto.EstacionDeServicioDto;
+import app.carburo.api.backend.dto.EstadisticaCombustibleDto;
 import app.carburo.api.backend.dto.PrecioCombustibleDto;
 import app.carburo.api.backend.entities.EstacionDeServicio;
 import app.carburo.api.backend.entities.PrecioCombustible;
 import app.carburo.api.backend.exceptions.ResourceNotFoundException;
 import app.carburo.api.backend.repositories.*;
 import org.apache.coyote.BadRequestException;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,34 +53,71 @@ public class EstacionDeServicioService {
 		this.precioStateService = precioStateService;
 	}
 
-	public List<EstacionDeServicioDto> getEstacionesDeServicioDto() {
-		List<EstacionDeServicioDto> estaciones = new ArrayList<>();
-		estacionDeServicioRepository.findAll().forEach(
-				eess -> estaciones.add(EstacionDeServicioDto.from(eess, List.of())));
-		return estaciones;
-	}
-
+	@Cacheable(value = "eess_count")
 	public long getTotalEstacionesDeServicio() {
 		return estacionDeServicioRepository.count();
+	}
+
+	@Cacheable(value = "combustibles_analiticas_hoy", key = "#fecha ?: 'hoy'")
+	public List<EstadisticaCombustibleDto> getEstadisticasCombustibles(LocalDate fecha)
+			throws BadRequestException {
+		LocalDate fechaTarget = (fecha == null) ? precioStateService.getBestDate() : fecha;
+
+		if (fechaTarget.isAfter(LocalDate.now())) throw new BadRequestException(
+				"No se pueden consultar analíticas de una fecha futura.");
+		if (fechaTarget.isBefore(PrecioCombustible.FECHA_MINIMA))
+			throw new BadRequestException("La fecha mínima permitida para consulta es " +
+												  PrecioCombustible.FECHA_MINIMA);
+
+		List<Object[]> rows = precioCombustibleRepository.findRawEstadisticasGlobalesPorFecha(
+				fechaTarget);
+
+		return rows.stream().map(row -> {
+			// Reconstruimos el CombustibleDto original usando los primeros 4 elementos de la fila
+			CombustibleDto combustibleDto = new CombustibleDto((short) row[0],
+															   // id
+															   (String) row[1],
+															   // denominacion
+															   (String) row[2],
+															   // codigo
+															   (Short) row[3]
+															   // id_grupo_combustible
+			);
+
+			// Devolvemos el DTO completo con su objeto compuesto
+			return new EstadisticaCombustibleDto(combustibleDto, (double) row[4],
+												 // precioMedio
+												 (double) row[5],        // precioMaximo
+												 (double) row[6],        // precioMinimo
+												 (long) row[7]
+												 // totalEstaciones
+			);
+		}).toList();
+	}
+
+	public List<EstacionDeServicioDto> getEstacionesDeServicioDto() {
+		return estacionDeServicioRepository.findAll().stream()
+				.map(EstacionDeServicioDto::from).toList();
 	}
 
 	/**
 	 * Devuelve una estación de servicio según su ID
 	 */
 	public EstacionDeServicioDto getEstacionDeServicioDtoById(int id) {
-		if (!estacionDeServicioRepository.existsById(id))
-			throw new ResourceNotFoundException(
-					"Estación de servicio no encontrada con id: " + id);
+		existsOrThrow(id);
 		return mapToDtoConPreciosHoy(
 				estacionDeServicioRepository.findEstacionDeServicioById(id), null);
+	}
+
+	public EstacionDeServicio getEstacionDeServicioById(int id) {
+		return estacionDeServicioRepository.findEstacionDeServicioById(id);
 	}
 
 
 	public EstacionDeServicioDto getEstacionDeServicioDtoById(int id, double latitud,
 															  double longitud) {
-		if (!estacionDeServicioRepository.existsById(id))
-			throw new ResourceNotFoundException(
-					"Estación de servicio no encontrada con id: " + id);
+		existsOrThrow(id);
+
 		EstacionDeServicio es = estacionDeServicioRepository.findEstacionDeServicioById(
 				id);
 		Long d = estacionDeServicioRepository.findDistanciaById(es.getId(), latitud,
@@ -86,44 +125,47 @@ public class EstacionDeServicioService {
 		return mapToDtoConPreciosHoy(es, d);
 	}
 
-	public List<PrecioCombustibleDto> getPreciosDeCombustiblesDtoByEstacionDeServicioId(
-			int id, int dias) throws BadRequestException {
-		if (!estacionDeServicioRepository.existsById(id))
-			throw new ResourceNotFoundException(
-					"Estación de servicio no encontrada con id: " + id);
+	/**
+	 * Obtiene los datos de múltiples Estaciones de Servicio por sus IDs sin incluir precios.
+	 *
+	 * @param ids Lista de IDs de las estaciones de servicio
+	 * @return Lista de Estaciones de Servicio en formato DTO sin precios
+	 * @throws BadRequestException si la lista de IDs está vacía o supera el límite
+	 */
+	public List<EstacionDeServicioDto> getEstacionesDeServicioDtoByIdsSinPrecios(
+			List<Integer> ids) throws BadRequestException {
+		if (ids == null || ids.isEmpty()) throw new BadRequestException(
+				"Debe proporcionar al menos un ID de estación de servicio.");
 
-		if (dias <= 0)
-			throw new BadRequestException("El parámetro 'dias' debe ser mayor que 0");
+		if (ids.size() > 100) throw new BadRequestException(
+				"No se permite la consulta de más de 100 estaciones simultáneamente.");
 
-		if (dias > MAX_DIAS) dias = MAX_DIAS;
-
-		LocalDate hoy = LocalDate.now();
-		LocalDate fechaInicio = hoy.minusDays(Integer.valueOf(dias - 1).longValue());
-
-		return precioCombustibleRepository.findByEstacion_IdAndId_FechaBetween(id,
-																			   fechaInicio,
-																			   hoy)
-				.stream().map(PrecioCombustibleDto::from).toList();
+		return estacionDeServicioRepository.findAllById(ids).stream()
+				.map(EstacionDeServicioDto::from).toList();
 	}
 
-	public List<PrecioCombustibleDto> getPreciosDeCombustiblesDtoByEstacionDeServicioIdAndFecha(
-			int id, LocalDate fecha) throws BadRequestException {
-		if (!estacionDeServicioRepository.existsById(id))
-			throw new ResourceNotFoundException(
-					"Estación de servicio no encontrada con id: " + id);
+	/**
+	 * Obtiene los datos de múltiples Estaciones de Servicio por sus IDs inyectando el cálculo
+	 * de la distancia desde un punto geográfico dado, sin incluir precios.
+	 */
+	public List<EstacionDeServicioDto> getEstacionesDeServicioDtoByIdsConDistanciaYSinPrecios(
+			List<Integer> ids, double latitud, double longitud)
+			throws BadRequestException {
+		if (ids == null || ids.isEmpty()) throw new BadRequestException(
+				"Debe proporcionar al menos un ID de estación de servicio.");
 
-		LocalDate hoy = LocalDate.now();
+		if (ids.size() > 100) throw new BadRequestException(
+				"No se permite la consulta de más de 100 estaciones simultáneamente.");
 
-		if (fecha.isAfter(hoy))
-			throw new BadRequestException("La fecha no puede ser futura");
+		validarCoordenadas(latitud, longitud);
 
-		if (fecha.isBefore(PrecioCombustible.FECHA_MINIMA)) throw new BadRequestException(
-				"La fecha mínima permitida es " + PrecioCombustible.FECHA_MINIMA);
-
-		return precioCombustibleRepository.findByEstacion_IdAndId_Fecha(id, fecha)
-				.stream().map(PrecioCombustibleDto::from).toList();
+		return estacionDeServicioRepository.findAllById(ids).stream().map(eess -> {
+			Long distancia = estacionDeServicioRepository.findDistanciaById(eess.getId(),
+																			latitud,
+																			longitud);
+			return EstacionDeServicioDto.from(eess, distancia);
+		}).toList();
 	}
-
 
 	/**
 	 * Devuelve estaciones por comunidad autónoma (DTO)
@@ -133,7 +175,6 @@ public class EstacionDeServicioService {
 		if (!comunidadAutonomaRepository.existsById(id))
 			throw new ResourceNotFoundException(
 					"Comunidad autónoma no encontrada con id: " + id);
-
 
 		return mapToDtoConPreciosHoy(
 				estacionDeServicioRepository.findEstacionDeServicioByComunidadAutonoma(
@@ -166,13 +207,9 @@ public class EstacionDeServicioService {
 
 	public List<EstacionDeServicioDto> getEstacionesDeServicioDtoCercanas(double lat,
 																		  double lon,
-																		  int limit) {
-		if (Double.isNaN(lat) || Double.isNaN(lon))
-			throw new IllegalArgumentException("Latitud y longitud son obligatorias");
-		if (lat < -90 || lat > 90) throw new IllegalArgumentException(
-				"Latitud fuera de rango válido (-90 a 90)");
-		if (lon < -180 || lon > 180) throw new IllegalArgumentException(
-				"Longitud fuera de rango válido (-180 a 180)");
+																		  int limit)
+			throws BadRequestException {
+		validarCoordenadas(lat, lon);
 		if (limit <= 0) limit = 1;
 		if (limit > MAX_ESTACIONES_CERCANAS) limit = MAX_ESTACIONES_CERCANAS;
 
@@ -187,6 +224,55 @@ public class EstacionDeServicioService {
 							.map(PrecioCombustibleDto::from).toList();
 					return EstacionDeServicioDto.from(eess, distancia, precios);
 				}).toList();
+	}
+
+	public List<PrecioCombustibleDto> getPreciosDeCombustiblesDtoByEstacionDeServicioId(
+			int id, int dias) throws BadRequestException {
+		existsOrThrow(id);
+
+		if (dias <= 0)
+			throw new BadRequestException("El parámetro 'dias' debe ser mayor que 0");
+
+		if (dias > MAX_DIAS) dias = MAX_DIAS;
+
+		LocalDate hoy = LocalDate.now();
+		LocalDate fechaInicio = hoy.minusDays(Integer.valueOf(dias - 1).longValue());
+
+		return precioCombustibleRepository.findByEstacion_IdAndId_FechaBetween(id,
+																			   fechaInicio,
+																			   hoy)
+				.stream().map(PrecioCombustibleDto::from).toList();
+	}
+
+	public List<PrecioCombustibleDto> getPreciosDeCombustiblesDtoByEstacionesIds(
+			List<Integer> ids) throws BadRequestException {
+		if (ids == null || ids.isEmpty()) throw new BadRequestException(
+				"Debe proporcionar al menos un ID de estación de servicio.");
+
+		// Control de rendimiento (Opcional, ajustable)
+		if (ids.size() > 100) throw new BadRequestException(
+				"No se permite la consulta de más de 100 estaciones simultáneamente.");
+
+		return precioCombustibleRepository.findPreciosHoyByListadoIdEstaciones(ids,
+																			   precioStateService.getBestDate())
+				.stream().map(PrecioCombustibleDto::from).toList();
+	}
+
+
+	public List<PrecioCombustibleDto> getPreciosDeCombustiblesDtoByEstacionDeServicioIdAndFecha(
+			int id, LocalDate fecha) throws BadRequestException {
+		existsOrThrow(id);
+
+		LocalDate hoy = LocalDate.now();
+
+		if (fecha.isAfter(hoy))
+			throw new BadRequestException("La fecha no puede ser futura");
+
+		if (fecha.isBefore(PrecioCombustible.FECHA_MINIMA)) throw new BadRequestException(
+				"La fecha mínima permitida es " + PrecioCombustible.FECHA_MINIMA);
+
+		return precioCombustibleRepository.findByEstacion_IdAndId_Fecha(id, fecha)
+				.stream().map(PrecioCombustibleDto::from).toList();
 	}
 
 	private List<EstacionDeServicioDto> mapToDtoConPreciosHoy(
@@ -221,4 +307,23 @@ public class EstacionDeServicioService {
 
 		return EstacionDeServicioDto.from(estacion, distancia, precios);
 	}
+
+	/**
+	 * Método privado utilitario para validar rangos geográficos.
+	 */
+	private void validarCoordenadas(double lat, double lon) throws BadRequestException {
+		if (Double.isNaN(lat) || Double.isNaN(lon))
+			throw new BadRequestException("Latitud y longitud son obligatorias");
+		if (lat < -90 || lat > 90)
+			throw new BadRequestException("Latitud fuera de rango válido (-90 a 90)");
+		if (lon < -180 || lon > 180)
+			throw new BadRequestException("Longitud fuera de rango válido (-180 a 180)");
+	}
+
+	public void existsOrThrow(Integer id) {
+		if (!estacionDeServicioRepository.existsById(id))
+			throw new ResourceNotFoundException(
+					"Estación de servicio no encontrada con id: " + id);
+	}
+
 }

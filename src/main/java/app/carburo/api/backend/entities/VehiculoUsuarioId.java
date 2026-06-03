@@ -36,8 +36,7 @@ public class VehiculoUsuarioId implements Serializable {
 
 	@Override
 	public String toString() {
-		String sb = "VehiculoUsuarioId{" + "vehiculoId=" + vehiculoId + ", usuarioUuid=" +
+		return "VehiculoUsuarioId{" + "vehiculoId=" + vehiculoId + ", usuarioUuid=" +
 				usuarioUuid + '}';
-		return sb;
 	}
 }
