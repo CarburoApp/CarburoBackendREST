@@ -152,6 +152,7 @@ public class RepostajeService {
         Repostaje repostaje = new Repostaje(vehiculo, combustible, estacion, usuario,
                                             dto.cantidad(), dto.coste_unitario(),
                                             dto.odometro_inicial(), dto.odometro_final(),
+                                            dto.fecha_repostaje(),
                                             dto.deposito_lleno(), dto.nota());
 
         repostaje = repostajeRepository.save(repostaje);

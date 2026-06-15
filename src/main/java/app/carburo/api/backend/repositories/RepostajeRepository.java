@@ -29,19 +29,19 @@ public interface RepostajeRepository extends CrudRepository<Repostaje, Integer> 
         FROM Repostaje r 
         WHERE r.vehiculo.id = :idVehiculo 
           AND (:idRepostajeExcluir IS NULL OR r.id <> :idRepostajeExcluir)
+          AND r.odometroInicial IS NOT NULL
           AND (
-               (r.odometroInicial IS NOT NULL AND :odometroInicial IS NOT NULL 
-                AND r.odometroInicial < :odometroFinal AND r.odometroFinal > :odometroInicial)
+               (
+                   :odometroInicial IS NOT NULL 
+                   AND r.odometroInicial < :odometroFinal 
+                   AND r.odometroFinal > :odometroInicial
+               )
                OR
-               (:odometroInicial IS NULL AND r.odometroFinal > COALESCE(r.odometroInicial, 0) 
-                AND :odometroFinal > COALESCE(r.odometroInicial, 0))
-               OR
-               (r.odometroInicial IS NULL AND :odometroInicial IS NOT NULL 
-                AND r.odometroFinal > :odometroInicial)
-               OR
-               (:odometroFinal = r.odometroFinal)
-               OR
-               (:odometroFinal >= COALESCE(r.odometroInicial, 0) AND :odometroFinal <= r.odometroFinal)
+               (
+                    :odometroInicial IS NULL
+                    AND :odometroFinal > r.odometroInicial
+               		AND :odometroFinal < r.odometroFinal
+               )
           )
     """)
 	boolean existsSolapamientoOdomatros(

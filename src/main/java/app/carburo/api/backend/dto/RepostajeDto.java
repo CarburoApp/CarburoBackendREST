@@ -35,7 +35,8 @@ public record RepostajeDto(
 				repostaje.getFechaRegistro(),
 				repostaje.getCantidad().doubleValue(),
 				repostaje.getCosteUnitario().doubleValue(),
-				repostaje.getOdometroInicial().doubleValue(),
+				(repostaje.getOdometroInicial() != null) ? repostaje.getOdometroInicial()
+						.doubleValue() : null,
 				repostaje.getOdometroFinal().doubleValue(),
 				repostaje.getDepositoLleno(),
 				repostaje.getNota()

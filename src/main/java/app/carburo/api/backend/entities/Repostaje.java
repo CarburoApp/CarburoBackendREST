@@ -74,7 +74,7 @@ public class Repostaje {
 	public Repostaje(Vehiculo vehiculo, Combustible combustible,
 					 EstacionDeServicio estacionDeServicio, Usuario usuario,
 					 double cantidad, double costeUnitario, Double odometroInicial,
-					 double odometroFinal, Boolean depositoLleno, String nota) {
+					 double odometroFinal, OffsetDateTime fechaRepostaje, Boolean depositoLleno, String nota) {
 		setVehiculo(vehiculo);
 		setCombustible(combustible);
 		setEstacionDeServicio(estacionDeServicio);
@@ -85,7 +85,7 @@ public class Repostaje {
 		setOdometroFinal(odometroFinal);
 		setDepositoLleno(depositoLleno);
 		setNota(nota);
-		setFechaRepostaje(OffsetDateTime.now());
+		setFechaRepostaje(fechaRepostaje);
 		setFechaRegistro(OffsetDateTime.now());
 	}
 
