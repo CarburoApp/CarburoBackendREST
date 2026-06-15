@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static app.carburo.api.backend.entities.Repostaje.COSTE_UNITARIO_MAX_VALUE;
@@ -90,6 +91,23 @@ public class RepostajeService {
         return repostajeRepository.findAllByUsuarioUuidOrderByFechaRepostajeDesc(uuid)
                 .stream().map(RepostajeDto::from)
                 .toList();
+    }
+
+    /**
+     * Obtiene el repostaje según su id.
+     *
+     * @param uuid UUID del usuario
+     * @param id   Id del repostaje
+     * @return listado de repostajes
+     */
+    public RepostajeDto getRepostajeById(UUID uuid, int id) {
+        findUsuarioOrThrow(uuid);
+
+        Repostaje repostaje = findRepostajeOrThrow(id);
+
+        validateVehiculoLinkedAndOwnership(uuid, repostaje.getVehiculo().getId(), false);
+
+        return RepostajeDto.from(repostaje);
     }
 
     /**
@@ -209,8 +227,8 @@ public class RepostajeService {
 
         }
 
-        repostaje.setCantidad(dto.cantidad());
         repostaje.setCosteUnitario(dto.coste_unitario());
+        repostaje.setCantidad(dto.cantidad());
         repostaje.setOdometroInicial(dto.odometro_inicial());
         repostaje.setOdometroFinal(dto.odometro_final());
         repostaje.setDepositoLleno(dto.deposito_lleno());

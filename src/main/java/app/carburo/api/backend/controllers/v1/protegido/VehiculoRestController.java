@@ -83,6 +83,30 @@ public class VehiculoRestController extends BaseProtectedRestController {
 	}
 
 	/**
+	 * Obtiene el repostaje correspondiente con el id indicado.
+	 * <p>
+	 * Endpoint: GET /api/v1/vehiculos/{uuid}/repostajes/{id}
+	 * <p>
+	 * Comprobaciones realizadas:
+	 * <li>El UUID debe coincidir con el UUID del token JWT.</li>
+	 * <li>El usuario debe existir.</li>
+	 * <li>El repostaje debe de existir.</li>
+	 * <li>El usuario debe estar enlazado con el vehículo del repostaje.</li>
+	 *
+	 * @param uuid UUID del usuario autenticado
+	 * @param id   Id del repostaje
+	 * @return listado de repostajes del usuario
+	 * @throws UnauthorizedException si el UUID no coincide con el token JWT
+	 */
+	@GetMapping("/{uuid}/repostajes/{id}")
+	public ResponseEntity<ApiResponse<RepostajeDto>> doGetRepostajeById(
+			@PathVariable UUID uuid, @PathVariable int id) {
+		validateOwnership(uuid);
+		return ResponseEntity.ok(
+				ApiResponse.success(repostajeService.getRepostajeById(uuid, id)));
+	}
+
+	/**
 	 * Obtiene un vehículo concreto junto con todos sus repostajes.
 	 * <p>
 	 * Endpoint: GET /api/v1/vehiculos/{uuid}/{idVehiculo}

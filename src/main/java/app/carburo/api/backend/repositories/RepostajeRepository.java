@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -19,6 +20,8 @@ public interface RepostajeRepository extends CrudRepository<Repostaje, Integer> 
 	List<Repostaje> findAllByUsuarioUuidOrderByFechaRepostajeDesc(UUID uuid);
 
 	List<Repostaje> findAllByVehiculoIdOrderByFechaRepostajeDesc(int idVehiculo);
+
+	Optional<Repostaje> findRepostajeById(int idVehiculo);
 
 	/**
 	 * Comprueba si existe algún repostaje para un vehículo cuyo rango de odómetros se solape
