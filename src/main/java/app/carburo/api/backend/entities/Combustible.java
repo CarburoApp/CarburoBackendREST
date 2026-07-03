@@ -52,7 +52,6 @@ public class Combustible {
 	/**
 	 * Asigna el grupo lógico al que pertenece el combustible (puede ser null).
 	 */
-	@Setter
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_grupo_combustible", insertable = false, updatable = false)
 	private GrupoCombustible grupoCombustible;
@@ -89,7 +88,6 @@ public class Combustible {
 		setCodigo(codigo);
 		setExtCode(extCode);
 		setGrupoCombustible(grupoCombustible);
-		this.idGrupoCombustible = grupoCombustible.getId();
 	}
 
 	// ==============================
@@ -140,6 +138,11 @@ public class Combustible {
 			throw new IllegalArgumentException(
 					"El Ext_Code del combustible no puede ser negativo");
 		this.extCode = extCode;
+	}
+
+	public void setGrupoCombustible(GrupoCombustible grupoCombustible) {
+		this.grupoCombustible = grupoCombustible;
+		this.idGrupoCombustible = (grupoCombustible != null) ? grupoCombustible.getId() : null;
 	}
 
 	// ==============================
