@@ -2,7 +2,7 @@ package app.carburo.api.backend.services;
 
 import app.carburo.api.backend.dto.ComunidadAutonomaDto;
 import app.carburo.api.backend.entities.ComunidadAutonoma;
-import app.carburo.api.backend.repositories.ComunidadAutonomaRepoository;
+import app.carburo.api.backend.repositories.ComunidadAutonomaRepository;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +13,10 @@ import java.util.Optional;
 @Service
 public class ComunidadAutonomaService {
 
-	private final ComunidadAutonomaRepoository comunidadAutonomaRepository;
+	private final ComunidadAutonomaRepository comunidadAutonomaRepository;
 
 	public ComunidadAutonomaService(
-			ComunidadAutonomaRepoository comunidadAutonomaRepository) {
+			ComunidadAutonomaRepository comunidadAutonomaRepository) {
 		this.comunidadAutonomaRepository = comunidadAutonomaRepository;
 	}
 

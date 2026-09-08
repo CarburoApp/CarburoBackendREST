@@ -33,7 +33,7 @@ class EstacionDeServicioServiceTest {
 	@Mock
 	private PrecioCombustibleRepository precioRepository;
 	@Mock
-	private ComunidadAutonomaRepoository caRepository;
+	private ComunidadAutonomaRepository caRepository;
 	@Mock
 	private ProvinciaRepository provinciaRepository;
 	@Mock

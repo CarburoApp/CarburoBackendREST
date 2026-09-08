@@ -49,4 +49,23 @@ public class MunicipioService {
 				.map(MunicipioDto::from).toList();
 	}
 
+	/**
+	 * Obtiene todos los municipios de una comunidad autónoma que
+	 * dispongan de estaciones de servicio.
+	 *
+	 * @param idComunidadAutonoma ID de la comunidad autónoma
+	 * @return Lista de municipios con estaciones de servicio
+	 */
+	@Cacheable(value = "municipiosConEESSPorComunidadAutonoma",
+			   key = "#idComunidadAutonoma")
+	public List<MunicipioDto> getMunicipiosDTOByComunidadAutonomaConEESS(
+			short idComunidadAutonoma) {
+
+		return municipioRepository
+				.findMunicipioByComunidadAutonomaConEESS(idComunidadAutonoma)
+				.stream()
+				.map(MunicipioDto::from)
+				.toList();
+	}
+
 }

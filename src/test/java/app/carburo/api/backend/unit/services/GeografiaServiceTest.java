@@ -7,7 +7,7 @@ import app.carburo.api.backend.entities.ComunidadAutonoma;
 import app.carburo.api.backend.entities.Municipio;
 import app.carburo.api.backend.entities.Provincia;
 import app.carburo.api.backend.exceptions.ResourceNotFoundException;
-import app.carburo.api.backend.repositories.ComunidadAutonomaRepoository;
+import app.carburo.api.backend.repositories.ComunidadAutonomaRepository;
 import app.carburo.api.backend.repositories.MunicipioRepository;
 import app.carburo.api.backend.repositories.ProvinciaRepository;
 import app.carburo.api.backend.services.ComunidadAutonomaService;
@@ -32,7 +32,7 @@ class GeografiaServiceTest {
 
 	// Mocks de Repositorios
 	@Mock
-	private ComunidadAutonomaRepoository caRepository;
+	private ComunidadAutonomaRepository caRepository;
 	@Mock
 	private ProvinciaRepository provinciaRepository;
 	@Mock
@@ -49,7 +49,7 @@ class GeografiaServiceTest {
 		// Instanciamos los servicios inyectando de forma manual los mocks
 		caService        = new ComunidadAutonomaService(caRepository);
 		municipioService = new MunicipioService(municipioRepository, provinciaRepository);
-		provinciaService = new ProvinciaService(provinciaRepository);
+		provinciaService = new ProvinciaService(provinciaRepository, caRepository);
 	}
 
 	// ==========================================

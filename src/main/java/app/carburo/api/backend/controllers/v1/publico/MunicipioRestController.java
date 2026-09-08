@@ -87,4 +87,29 @@ public class MunicipioRestController {
 				id);
 		return ResponseEntity.ok(ApiResponse.success(municipios));
 	}
+
+	/**
+	 * Obtiene el listado de municipios de una comunidad autónoma
+	 * que dispongan de estaciones de servicio.
+	 *
+	 * <p>
+	 * Endpoint:
+	 * GET /api/v1/public/municipios/comunidad-autonoma/{id}/con-estaciones-de-servicio
+	 * </p>
+	 *
+	 * @return {@link ResponseEntity} con lista de {@link MunicipioDto}
+	 * y código HTTP 200 OK
+	 */
+	@GetMapping(
+			API_ENDPOINT_MUNICIPIOS_COMUNIDAD_AUTONOMA + "/{id}" +
+					API_ENDPOINT_MUNICIPIOS_EESS_EXISTENTES
+	)
+	public ResponseEntity<ApiResponse<List<MunicipioDto>>> doGetMunicipiosByComunidadAutonomaConEstacionesDeServicio(
+			@PathVariable short id) {
+
+		List<MunicipioDto> municipios = municipiosService.getMunicipiosDTOByComunidadAutonomaConEESS(
+				id);
+
+		return ResponseEntity.ok(ApiResponse.success(municipios));
+	}
 }

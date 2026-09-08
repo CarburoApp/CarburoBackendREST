@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
 
-public interface ComunidadAutonomaRepoository
+public interface ComunidadAutonomaRepository
 		extends CrudRepository<ComunidadAutonoma, Short> {
 	Optional<ComunidadAutonoma> findComunidadAutonomaById(short idCCAA);
 }

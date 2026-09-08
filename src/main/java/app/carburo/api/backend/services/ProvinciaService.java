@@ -3,6 +3,8 @@ package app.carburo.api.backend.services;
 import app.carburo.api.backend.dto.ProvinciaDto;
 import app.carburo.api.backend.entities.ComunidadAutonoma;
 import app.carburo.api.backend.entities.Provincia;
+import app.carburo.api.backend.exceptions.ResourceNotFoundException;
+import app.carburo.api.backend.repositories.ComunidadAutonomaRepository;
 import app.carburo.api.backend.repositories.ProvinciaRepository;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -25,14 +27,18 @@ public class ProvinciaService {
 	 * Repositorio de acceso a datos de provincias.
 	 */
 	private final ProvinciaRepository provinciaRepository;
+	private final ComunidadAutonomaRepository comunidadAutonomaRepository;
 
 	/**
 	 * Constructor del servicio con inyección de dependencias.
 	 *
 	 * @param provinciaRepository repositorio de provincias
+	 * @param comunidadAutonomaRepository repositorio de comunidades autónomas
 	 */
-	public ProvinciaService(ProvinciaRepository provinciaRepository) {
+	public ProvinciaService(ProvinciaRepository provinciaRepository,
+							ComunidadAutonomaRepository comunidadAutonomaRepository) {
 		this.provinciaRepository = provinciaRepository;
+		this.comunidadAutonomaRepository = comunidadAutonomaRepository;
 	}
 
 	@Cacheable(value = "provincias")
@@ -54,6 +60,19 @@ public class ProvinciaService {
 		provinciaRepository.findAllOrderByDenominacion()
 				.forEach(provincias::add);
 		return provincias;
+	}
+
+	public List<ProvinciaDto> getProvinciasDTOByComunidadAutonoma(
+			short idComunidadAutonoma) {
+		if (!comunidadAutonomaRepository.existsById(idComunidadAutonoma))
+			throw new ResourceNotFoundException(
+					"Comunidad Autónoma no encontrada con id: " + idComunidadAutonoma);
+
+		return provinciaRepository
+				.findProvinciaByComunidadAutonoma(idComunidadAutonoma)
+				.stream()
+				.map(ProvinciaDto::from)
+				.toList();
 	}
 
 	/**

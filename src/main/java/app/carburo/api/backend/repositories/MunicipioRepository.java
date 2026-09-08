@@ -14,23 +14,6 @@ import java.util.List;
  */
 public interface MunicipioRepository extends CrudRepository<Municipio, Short> {
 
-	/**
-	 * Devuelve todos los municipios que pertenecen a una provincia concreta y
-	 * que tienen al menos una estación de servicio asociada, ordenados por denominación ascendente (A → Z).
-	 * <p>
-	 * Se usa DISTINCT para evitar duplicados si un municipio tiene varias estaciones.
-	 * Se realiza un INNER JOIN con la colección de estaciones de servicio.
-	 *
-	 * @param provincia Provincia a la que pertenecen los municipios
-	 * @return Lista de municipios con al menos una estación de servicio, ordenados alfabéticamente
-	 */
-	@Query("SELECT DISTINCT m " +
-			"FROM Municipio m " +
-			"JOIN m.estacionesDeServicio e " +
-			"WHERE m.provincia = :provincia " +
-			"ORDER BY m.denominacion ASC")
-	List<Municipio> findMunicipioByProvinciaConEESS(@Param("provincia") Provincia provincia);
-
 	@Query("SELECT DISTINCT m " +
 			"FROM Municipio m " +
 			"WHERE m.provincia.id = :provincia " +
@@ -43,6 +26,14 @@ public interface MunicipioRepository extends CrudRepository<Municipio, Short> {
 			"WHERE m.provincia.id = :provincia " +
 			"ORDER BY m.denominacion ASC")
 	List<Municipio> findMunicipioByProvinciaConEESS(@Param("provincia") short provinciaId);
+
+	@Query("SELECT DISTINCT m " +
+			"FROM Municipio m " +
+			"JOIN m.estacionesDeServicio e " +
+			"WHERE m.provincia.comunidadAutonoma.id = :comunidadAutonoma " +
+			"ORDER BY m.denominacion ASC")
+	List<Municipio> findMunicipioByComunidadAutonomaConEESS(
+			@Param("comunidadAutonoma") short comunidadAutonomaId);
 
 	Provincia id(short id);
 }

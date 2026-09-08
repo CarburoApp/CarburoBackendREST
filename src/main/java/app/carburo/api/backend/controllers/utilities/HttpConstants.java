@@ -48,9 +48,11 @@ public final class HttpConstants {
 	public static final String API_ENDPOINT_MUNICIPIOS =
 			API_BASE_PATH_PUBLIC + API_PATH_MUNICIPIOS;
 	public static final String API_ENDPOINT_MUNICIPIOS_PROVINCIA = "/provincia";
+	public static final String API_ENDPOINT_MUNICIPIOS_COMUNIDAD_AUTONOMA = "/comunidad-autonoma";
 	public static final String API_ENDPOINT_MUNICIPIOS_EESS_EXISTENTES = "/con-estaciones-de-servicio";
 	public static final String API_ENDPOINT_PROVINCIAS =
 			API_BASE_PATH_PUBLIC + API_PATH_PROVINCIAS;
+	public static final String API_ENDPOINT_PROVINCIAS_COMUNIDAD_AUTONOMA = "/comunidad-autonoma";
 	public static final String API_ENDPOINT_COMUNIDADES_AUTONOMAS =
 			API_BASE_PATH_PUBLIC + API_PATH_COMUNIDADES_AUTONOMAS;
 	public static final String API_ENDPOINT_COMUNIDADES_AUTONOMAS_PROVINCIAS_MUNICIPIOS =

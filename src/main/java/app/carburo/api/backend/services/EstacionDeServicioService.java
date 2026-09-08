@@ -29,7 +29,7 @@ public class EstacionDeServicioService {
 
 	private final EstacionDeServicioRepository estacionDeServicioRepository;
 	private final PrecioCombustibleRepository precioCombustibleRepository;
-	private final ComunidadAutonomaRepoository comunidadAutonomaRepository;
+	private final ComunidadAutonomaRepository comunidadAutonomaRepository;
 	private final ProvinciaRepository provinciaRepository;
 	private final MunicipioRepository municipioRepository;
 	private final PrecioStateService precioStateService;
@@ -41,7 +41,7 @@ public class EstacionDeServicioService {
 	public EstacionDeServicioService(
 			EstacionDeServicioRepository estacionDeServicioRepository,
 			PrecioCombustibleRepository precioCombustibleRepository,
-			ComunidadAutonomaRepoository comunidadAutonomaRepository,
+			ComunidadAutonomaRepository comunidadAutonomaRepository,
 			ProvinciaRepository provinciaRepository,
 			MunicipioRepository municipioRepository,
 			PrecioStateService precioStateService) {

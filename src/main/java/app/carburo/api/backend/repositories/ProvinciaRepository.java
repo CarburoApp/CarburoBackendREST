@@ -4,7 +4,9 @@ import app.carburo.api.backend.entities.ComunidadAutonoma;
 import app.carburo.api.backend.entities.Provincia;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,6 +23,13 @@ public interface ProvinciaRepository extends CrudRepository<Provincia, Short> {
 	 */
 	Iterable<Provincia> findAllByComunidadAutonoma(ComunidadAutonoma comunidadAutonoma);
 
+	@Query("""
+       SELECT p
+       FROM Provincia p
+       WHERE p.comunidadAutonoma.id = :comunidadAutonoma
+       ORDER BY p.denominacion ASC
+       """)
+	List<Provincia> findProvinciaByComunidadAutonoma(@Param("comunidadAutonoma") short idComunidadAutonoma);
 	/**
 	 * Devuelve una provincia según su identificador.
 	 *
