@@ -1,9 +1,11 @@
 package app.carburo.api.backend.config;
 
 import app.carburo.api.backend.controllers.utilities.HttpConstants;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.StringUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -32,7 +34,9 @@ public class CorsConfig {
 	 * </p>
 	 */
 	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
+	public CorsConfigurationSource corsConfigurationSource(
+			@Value("${cors.test-origin:}") String testOrigin
+	) {
 
 		CorsConfiguration config = new CorsConfiguration();
 
@@ -43,6 +47,9 @@ public class CorsConfig {
 											//, app.carburo.mobile -> Cors no afecta a apps móviles, solo a navegadores web
 										   );
 		config.setAllowedOrigins(allowOrigins);
+
+		if (StringUtils.hasText(testOrigin))
+			config.addAllowedOrigin(testOrigin.trim());
 
 		// Métodos permitidos
 		List<HttpMethod> allowMethods = List.of(HttpMethod.GET, HttpMethod.POST,
