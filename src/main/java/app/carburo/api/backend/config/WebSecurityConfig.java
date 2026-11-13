@@ -2,6 +2,7 @@ package app.carburo.api.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -72,5 +73,23 @@ public class WebSecurityConfig {
 	public AuthenticationManager authenticationManager(
 			AuthenticationConfiguration config) {
 		return config.getAuthenticationManager();
+	}
+
+	/**
+	 * Estos filtros se ejecutan dentro de Spring Security. Evita que Spring Boot
+	 * también los registre como filtros del servlet y los ejecute dos veces.
+	 */
+	@Bean
+	public FilterRegistrationBean<ApiKeyFilter> disableApiKeyServletRegistration(ApiKeyFilter filter) {
+		FilterRegistrationBean<ApiKeyFilter> registration = new FilterRegistrationBean<>(filter);
+		registration.setEnabled(false);
+		return registration;
+	}
+
+	@Bean
+	public FilterRegistrationBean<SupabaseJwtFilter> disableJwtServletRegistration(SupabaseJwtFilter filter) {
+		FilterRegistrationBean<SupabaseJwtFilter> registration = new FilterRegistrationBean<>(filter);
+		registration.setEnabled(false);
+		return registration;
 	}
 }

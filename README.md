@@ -67,14 +67,22 @@ Estas variables se utilizan en **`application.properties`** para configurar Spri
 
 | Variable            | Descripción                                                    |
 |---------------------|----------------------------------------------------------------|
-| `PUBLIC_API_KEY`    | API Key requerida para acceder a endpoints públicos protegidos |
+| `PUBLIC_API_KEY_WEB`    | Clave del cliente web; requiere `Origin` exacto en `CORS_ALLOWED_ORIGINS` |
+| `PUBLIC_API_KEY_MOBILE` | Clave del cliente móvil; no depende de CORS |
+| `CORS_ALLOWED_ORIGINS` | Orígenes web exactos separados por comas. Por defecto: `https://carburo.app` |
 | `SUPABASE_ISSUER`   | Issuer del JWT de Supabase                                     |
 | `SUPABASE_JWKS_URL` | URL del JWKS para validación de tokens JWT                     |
 
 #### 🚨 Importante sobre seguridad
 
-- Todos los endpoints bajo `/api/v1/public/**` están protegidos por **API Key**
-- La API Key debe enviarse en el header: `X-API-KEY: tu_api_key`
+- Todas las peticiones API (salvo preflight `OPTIONS`) requieren `X-API-KEY`.
+- La clave web solo se acepta si `Origin` coincide exactamente con uno de `CORS_ALLOWED_ORIGINS`.
+- La clave móvil no depende de CORS, ya que CORS solo lo aplican los navegadores.
+- CORS y API key no autentican a un usuario: los endpoints privados siguen requiriendo un JWT válido.
+
+Genera dos valores aleatorios e independientes (por ejemplo, `openssl rand -hex 32`) y configúralos como `PUBLIC_API_KEY_WEB` y `PUBLIC_API_KEY_MOBILE` en el entorno del servidor. No los guardes en Git. La clave web terminará visible para los usuarios en las peticiones del navegador; su separación sirve para limitar y rotar credenciales por cliente, no para mantenerla secreta.
+
+Para una rotación sin corte, configura temporalmente la clave nueva como `PUBLIC_API_KEY_WEB` y la anterior como `PUBLIC_API_KEY_WEB_PREVIOUS`; actualiza el frontend y, cuando ya no se use la anterior, elimina `PUBLIC_API_KEY_WEB_PREVIOUS`. Para la app móvil existe el mismo mecanismo con `PUBLIC_API_KEY_MOBILE_PREVIOUS`, útil mientras los usuarios actualizan la app.
 
 - El sistema JWT se usa para endpoints privados (auth futura o interna)
 - Si la API Key es incorrecta → se devuelve:

@@ -1,11 +1,9 @@
 package app.carburo.api.backend.config;
 
 import app.carburo.api.backend.controllers.utilities.HttpConstants;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.util.StringUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,33 +21,29 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
+	private final CorsOriginPolicy corsOriginPolicy;
+
+	public CorsConfig(CorsOriginPolicy corsOriginPolicy) {
+		this.corsOriginPolicy = corsOriginPolicy;
+	}
+
 	/**
 	 * Define la configuración CORS global de la aplicación.
-	 *
-	 * <p>
 	 * Permite:
 	 * - Peticiones desde el frontend (carburo.app)
 	 * - Envío de headers como Authorization (JWT)
 	 * - Métodos HTTP habituales
-	 * </p>
 	 */
 	@Bean
-	public CorsConfigurationSource corsConfigurationSource(
-			@Value("${cors.test-origin:}") String testOrigin
-	) {
+	public CorsConfigurationSource corsConfigurationSource() {
 
 		CorsConfiguration config = new CorsConfiguration();
 
-		// Necesario para enviar JWT en Authorization
-		config.setAllowCredentials(true);
+		// JWT se envía explícitamente en Authorization; no hacen falta cookies.
+		config.setAllowCredentials(false);
 		// Dominio del frontend en producción
-		List<String> allowOrigins = List.of(HttpConstants.BASE_WEB_URI
-											//, app.carburo.mobile -> Cors no afecta a apps móviles, solo a navegadores web
-										   );
-		config.setAllowedOrigins(allowOrigins);
-
-		if (StringUtils.hasText(testOrigin))
-			config.addAllowedOrigin(testOrigin.trim());
+		// Orígenes exactos compartidos con la política de la API key web.
+		config.setAllowedOrigins(corsOriginPolicy.getAllowedOrigins());
 
 		// Métodos permitidos
 		List<HttpMethod> allowMethods = List.of(HttpMethod.GET, HttpMethod.POST,
