@@ -14,6 +14,7 @@ import app.carburo.api.backend.repositories.UsuarioRepository;
 import app.carburo.api.backend.services.queryServices.CombustibleQueryService;
 import jakarta.transaction.Transactional;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
  * {@link UsuarioAlreadyExistsException} o {@link InvalidUsuarioDataException}.</p>
  */
 @Service
+@Slf4j
 public class UsuarioService {
 
     private final EstacionDeServicioService estacionDeServicioService;
@@ -162,6 +164,7 @@ public class UsuarioService {
         }
 
         usuarioRepository.save(usuario);
+        log.info("User profile created");
     }
 
     /**
@@ -182,6 +185,7 @@ public class UsuarioService {
         usuario.setProvinciaFavorita(provincia);
 
         usuarioRepository.save(usuario);
+        log.info("User's favorite province updated");
     }
 
     /**
@@ -206,6 +210,7 @@ public class UsuarioService {
         usuario.getCombustiblesFavoritos().addAll(nuevos);
 
         usuarioRepository.save(usuario);
+        log.info("User's favorite fuels updated");
     }
 
     /**
@@ -226,6 +231,7 @@ public class UsuarioService {
         usuario.getEessFavoritas().add(estacion);
 
         usuarioRepository.save(usuario);
+        log.info("Favorite service station added to user profile");
     }
 
     /**
@@ -246,6 +252,7 @@ public class UsuarioService {
         usuario.getEessFavoritas().remove(estacion);
 
         usuarioRepository.save(usuario);
+        log.info("Favorite service station removed from user profile");
     }
 
     /**

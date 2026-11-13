@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,7 @@ import static app.carburo.api.backend.controllers.utilities.HttpConstants.*;
  * Si la clave no es válida para su cliente, devuelve 401 UNAUTHORIZED.
  */
 @Component
+@Slf4j
 public class ApiKeyFilter extends OncePerRequestFilter {
 
 	private final ObjectMapper objectMapper;
@@ -90,6 +92,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 					&& corsOriginPolicy.allows(request.getHeader("Origin"));
 
 			if (!validMobileKey && !validWebKey) {
+				log.info("API key rejected for {} {}", request.getMethod(), path);
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 				response.setContentType(CONTENT_TYPE_JSON);
 				response.setCharacterEncoding(CONTENT_CHARACTER_ENCODING);

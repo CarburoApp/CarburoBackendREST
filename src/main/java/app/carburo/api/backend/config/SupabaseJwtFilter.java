@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,6 +44,7 @@ import static app.carburo.api.backend.controllers.utilities.HttpConstants.*;
  * </p>
  */
 @Component
+@Slf4j
 public class SupabaseJwtFilter extends OncePerRequestFilter {
 
 	@Value("${security.jwt.issuer}")
@@ -93,6 +95,8 @@ public class SupabaseJwtFilter extends OncePerRequestFilter {
 		// Validación básica del header Authorization
 		if (authHeader == null ||
 				!authHeader.startsWith(HttpConstants.AUTH_BEARER_PREFIX)) {
+			log.info("Protected request missing bearer token: {} {}",
+					 request.getMethod(), request.getRequestURI());
 			writeError(response, ERR_UNAUTHORIZED, ERR_INVALID_TOKEN);
 			return;
 		}
@@ -102,11 +106,15 @@ public class SupabaseJwtFilter extends OncePerRequestFilter {
 		try {
 			user = JwtValidator.validateWithJwks(token, jwksUrl, issuer);
 		} catch (TokenExpiredException e) {
+			log.info("Expired JWT on protected request: {} {}",
+					 request.getMethod(), request.getRequestURI());
 			writeError(response, ERR_UNAUTHORIZED, e.getMessage());
 			return;
 		}
 
 		if (user == null) {
+			log.info("Invalid JWT on protected request: {} {}",
+					 request.getMethod(), request.getRequestURI());
 			writeError(response, ERR_UNAUTHORIZED, ERR_INVALID_TOKEN);
 			return;
 		}

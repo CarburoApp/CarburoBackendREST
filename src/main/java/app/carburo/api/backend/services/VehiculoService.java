@@ -11,6 +11,7 @@ import app.carburo.api.backend.repositories.UsuarioRepository;
 import app.carburo.api.backend.repositories.VehiculoRepository;
 import app.carburo.api.backend.repositories.VehiculoUsuarioRepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -34,6 +35,7 @@ import static app.carburo.api.backend.entities.Vehiculo.ODOMETRO_MAX_VALUE;
  * </p>
  */
 @Service
+@Slf4j
 public class VehiculoService {
 
     private final VehiculoRepository vehiculoRepository;
@@ -132,6 +134,7 @@ public class VehiculoService {
         VehiculoUsuario relacion = new VehiculoUsuario(vehiculo, usuario, true);
 
         vehiculoUsuarioRepository.save(relacion);
+        log.info("Vehicle created and linked to its owner");
 
         return vehiculo.getId();
     }
@@ -163,6 +166,7 @@ public class VehiculoService {
         vehiculo.setFechaModificacion(OffsetDateTime.now());
 
         vehiculoRepository.save(vehiculo);
+        log.info("Vehicle updated");
     }
 
 
@@ -178,6 +182,7 @@ public class VehiculoService {
     public void deleteVehiculo(UUID uuid, int id) {
         Vehiculo vehiculo = validateVehiculoExistsAndOwnership(uuid, id, true);
         vehiculoRepository.delete(vehiculo);
+        log.info("Vehicle deleted");
     }
 
     /**

@@ -1,6 +1,7 @@
 package app.carburo.api.backend.config;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -13,16 +14,18 @@ import java.util.List;
  */
 @Getter
 @Component
+@Slf4j
 public class CorsOriginPolicy {
 
     private final List<String> allowedOrigins;
 
-    public CorsOriginPolicy(@Value("${cors.allowed-origins:https://carburo.app}") String configuredOrigins) {
+    public CorsOriginPolicy(@Value("${cors.allowed-origins}") String configuredOrigins) {
         this.allowedOrigins = Arrays.stream(configuredOrigins.split(","))
                 .map(String::trim)
                 .filter(StringUtils::hasText)
                 .distinct()
                 .toList();
+        log.info("CORS allowed origins loaded: {}", allowedOrigins);
     }
 
     /**

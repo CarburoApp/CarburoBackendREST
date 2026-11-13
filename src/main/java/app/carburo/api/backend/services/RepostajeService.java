@@ -7,11 +7,11 @@ import app.carburo.api.backend.exceptions.ResourceNotFoundException;
 import app.carburo.api.backend.exceptions.UnauthorizedException;
 import app.carburo.api.backend.repositories.*;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static app.carburo.api.backend.entities.Repostaje.COSTE_UNITARIO_MAX_VALUE;
@@ -29,6 +29,7 @@ import static app.carburo.api.backend.entities.Vehiculo.*;
  *
  */
 @Service
+@Slf4j
 public class RepostajeService {
 
     private final RepostajeRepository repostajeRepository;
@@ -176,6 +177,7 @@ public class RepostajeService {
         repostaje = repostajeRepository.save(repostaje);
 
         updateVehiculoOdometerIfNecessary(vehiculo, repostaje.getOdometroFinal());
+        log.info("Refuelling record created");
 
         return repostaje.getId();
     }
@@ -237,6 +239,7 @@ public class RepostajeService {
         repostajeRepository.save(repostaje);
 
         updateVehiculoOdometerIfNecessary(vehiculo, repostaje.getOdometroFinal());
+        log.info("Refuelling record updated");
     }
 
     /**
@@ -258,6 +261,7 @@ public class RepostajeService {
         validateVehiculoLinkedAndOwnership(uuid, idVehiculo, true);
         Repostaje repostaje = validateRepostajeOwnership(idVehiculo, idRepostaje);
         repostajeRepository.delete(repostaje);
+        log.info("Refuelling record deleted");
     }
 
     /**
